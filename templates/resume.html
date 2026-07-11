@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% set active_page = 'resume' %}
+
+{% block title %}在线简历 | 朱旭{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <!-- 顶部操作栏 -->
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-2xl font-bold text-white">在线简历</h1>
+    <a href="/static/resume/zhuxu-resume.pdf"
+       download
+       class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+      下载 PDF 版本
+    </a>
+  </div>
+
+  <!-- 简历正文 -->
+  <div class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xl">
+
+    <!-- 个人信息头部 -->
+    <div class="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700 px-8 py-8">
+      <h2 class="text-3xl font-bold text-white mb-1">朱 旭</h2>
+      <p class="text-sky-400 text-base font-medium mb-4">AI 应用开发 / Python 后端 / RAG &amp; Agent</p>
+      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          [your.email@example.com]
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+          github.com/[your-username]
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          [江西·南昌]
+        </span>
+      </div>
+    </div>
+
+    <!-- 简历内容 -->
+    <div class="px-8 py-8 space-y-10">
+
+      <!-- 教育背景 -->
+      <section>
+        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
+          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
+          教育背景
+        </h3>
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-white font-medium">[南昌大学]</p>
+            <p class="text-slate-400 text-sm mt-0.5">[软件工程] · 本科</p>
+            <p class="text-slate-500 text-sm mt-1">GPA：[X.XX] / 4.5 &nbsp;·&nbsp; 主修：[数据结构、算法、操作系统、数据库]</p>
+          </div>
+          <span class="text-slate-500 text-sm shrink-0 ml-4">[2021.09] – [2025.06]</span>
+        </div>
+      </section>
+
+      <!-- 技术栈 -->
+      <section>
+        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
+          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
+          技术栈
+        </h3>
+        <div class="space-y-3">
+
+          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
+            <span class="text-slate-400 font-medium shrink-0">编程语言</span>
+            <div class="flex flex-wrap gap-2">
+              {% for tag in ['Python', 'Java', 'TypeScript', 'SQL', 'Bash'] %}
+              <span class="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md text-xs">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
+            <span class="text-slate-400 font-medium shrink-0">AI / LLM</span>
+            <div class="flex flex-wrap gap-2">
+              {% for tag in ['LangChain', 'LlamaIndex', 'RAG', 'OpenAI API', 'Embedding', 'Prompt Engineering'] %}
+              <span class="px-2.5 py-1 bg-sky-900/40 border border-sky-700/40 text-sky-300 rounded-md text-xs">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
+            <span class="text-slate-400 font-medium shrink-0">后端框架</span>
+            <div class="flex flex-wrap gap-2">
+              {% for tag in ['FastAPI', 'Django', 'Flask', 'SQLAlchemy', 'Alembic'] %}
+              <span class="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md text-xs">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
+            <span class="text-slate-400 font-medium shrink-0">数据库</span>
+            <div class="flex flex-wrap gap-2">
+              {% for tag in ['PostgreSQL', 'MySQL', 'Qdrant', 'Redis', 'Milvus'] %}
+              <span class="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md text-xs">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
+            <span class="text-slate-400 font-medium shrink-0">工程部署</span>
+            <div class="flex flex-wrap gap-2">
+              {% for tag in ['Docker', 'Docker Compose', 'Nginx', 'Linux', 'GitHub Actions'] %}
+              <span class="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md text-xs">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 项目经历 -->
+      <section>
+        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
+          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
+          项目经历
+        </h3>
+        <div class="space-y-7">
+
+          <!-- 项目1 -->
+          <div>
+            <div class="flex justify-between items-start mb-1">
+              <div>
+                <p class="text-white font-semibold">法奥机器人智能客服 RAG 知识库</p>
+                <p class="text-slate-400 text-sm">[独立开发 / 内部落地] · AI 应用开发</p>
+              </div>
+              <span class="text-slate-500 text-sm shrink-0 ml-4">[2024.03] – [2024.08]</span>
+            </div>
+            <ul class="mt-2 space-y-1 text-sm text-slate-400 list-disc list-inside">
+              <li>基于 [LangChain/LlamaIndex] 设计并实现 RAG 检索增强生成知识库系统</li>
+              <li>对接法奥机器人内部技术文档，构建向量索引，支持多轮对话</li>
+              <li>通过 Reranking + 上下文压缩优化检索准确率</li>
+              <li>使用 FastAPI 封装服务接口，接入企业微信机器人</li>
+            </ul>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              {% for t in ['Python', 'LangChain', 'Qdrant', 'FastAPI', 'OpenAI'] %}
+              <span class="text-xs text-slate-500 bg-slate-800 rounded px-2 py-0.5">{{ t }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- 项目2 -->
+          <div>
+            <div class="flex justify-between items-start mb-1">
+              <div>
+                <p class="text-white font-semibold">血压测量规范化外接控制模块</p>
+                <p class="text-slate-400 text-sm">[团队项目 / 竞赛作品] · Python 后端 + 嵌入式</p>
+              </div>
+              <span class="text-slate-500 text-sm shrink-0 ml-4">[2023.09] – [2024.01]</span>
+            </div>
+            <ul class="mt-2 space-y-1 text-sm text-slate-400 list-disc list-inside">
+              <li>设计并实现 Python 后端服务，控制外接硬件模块进行规范化血压采集</li>
+              <li>开发基于 [Flask/FastAPI] 的数据管理接口，支持历史记录查询与报告导出</li>
+              <li>[获得相关竞赛奖项]</li>
+            </ul>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              {% for t in ['Python', 'Flask', 'SQLite', '串口通信'] %}
+              <span class="text-xs text-slate-500 bg-slate-800 rounded px-2 py-0.5">{{ t }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- 项目3 -->
+          <div>
+            <div class="flex justify-between items-start mb-1">
+              <div>
+                <p class="text-white font-semibold">个人招聘展示 Agent</p>
+                <p class="text-slate-400 text-sm">[个人项目 / 在线运行] · 全栈</p>
+              </div>
+              <span class="text-slate-500 text-sm shrink-0 ml-4">[2025.06] – 至今</span>
+            </div>
+            <ul class="mt-2 space-y-1 text-sm text-slate-400 list-disc list-inside">
+              <li>面向 HR 和面试官设计的个人展示网站，集成 AI 问答功能</li>
+              <li>基于 FastAPI + Qdrant + OpenAI 构建 RAG 问答后端，支持流式输出</li>
+              <li>前端使用 Jinja2 + HTMX + Tailwind CSS，响应式设计</li>
+              <li>Docker Compose 一键部署，Nginx 反向代理</li>
+            </ul>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              {% for t in ['FastAPI', 'Qdrant', 'OpenAI', 'Jinja2', 'Docker', 'Tailwind CSS'] %}
+              <span class="text-xs text-slate-500 bg-slate-800 rounded px-2 py-0.5">{{ t }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- 项目4 -->
+          <div>
+            <div class="flex justify-between items-start mb-1">
+              <div>
+                <p class="text-white font-semibold">OpenHarmony / UNISOC 系统适配</p>
+                <p class="text-slate-400 text-sm">[实习项目] · 嵌入式 / 系统</p>
+              </div>
+              <span class="text-slate-500 text-sm shrink-0 ml-4">[2024.06] – [2024.09]</span>
+            </div>
+            <ul class="mt-2 space-y-1 text-sm text-slate-400 list-disc list-inside">
+              <li>参与 OpenHarmony 在 UNISOC 芯片平台的系统适配工作</li>
+              <li>[具体工作内容占位：驱动适配、HAL 层开发等]</li>
+            </ul>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              {% for t in ['C', 'OpenHarmony', 'UNISOC', 'Linux'] %}
+              <span class="text-xs text-slate-500 bg-slate-800 rounded px-2 py-0.5">{{ t }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 组织经历 -->
+      <section>
+        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
+          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
+          组织经历
+        </h3>
+        <div class="space-y-4">
+          <div class="flex justify-between items-start text-sm">
+            <div>
+              <p class="text-white font-medium">[学生组织名称]</p>
+              <p class="text-slate-400 mt-0.5">[职位，如：技术部部长] · [主要职责占位]</p>
+            </div>
+            <span class="text-slate-500 shrink-0 ml-4">[2022.09] – [2023.06]</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 获奖 / 证书 -->
+      <section>
+        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
+          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
+          获奖与证书
+        </h3>
+        <ul class="space-y-2 text-sm text-slate-400">
+          <li class="flex justify-between">
+            <span>[竞赛名称，如：全国大学生软件大赛] · [奖项等级，如：二等奖]</span>
+            <span class="text-slate-500">[2024.01]</span>
+          </li>
+          <li class="flex justify-between">
+            <span>[竞赛名称] · [奖项等级]</span>
+            <span class="text-slate-500">[2023.06]</span>
+          </li>
+          <li class="flex justify-between">
+            <span>[证书名称，如：CET-6 / 计算机等级证书 等]</span>
+            <span class="text-slate-500">[202X.XX]</span>
+          </li>
+        </ul>
+      </section>
+
+    </div><!-- /简历内容 -->
+
+    <!-- 底部提示 -->
+    <div class="bg-slate-800/40 border-t border-slate-700 px-8 py-4">
+      <p class="text-xs text-slate-600 text-center">
+        以上内容为网页展示版本，完整版请下载 PDF 简历。方括号内为占位符，将在实际简历中替换。
+      </p>
+    </div>
+
+  </div><!-- /简历卡片 -->
+
+</div>
+{% endblock %}

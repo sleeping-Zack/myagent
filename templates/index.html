@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% set active_page = 'home' %}
+
+{% block title %}朱旭 | AI 应用开发工程师{% endblock %}
+
+{% block content %}
+
+<!-- ==================== Hero ==================== -->
+<section class="relative overflow-hidden border-b border-slate-800">
+  <!-- 背景装饰 -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-sky-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+    <div class="max-w-2xl">
+      <!-- 标签 -->
+      <span class="inline-block text-xs font-semibold tracking-widest text-sky-400 uppercase mb-4">
+        Open to Work
+      </span>
+
+      <!-- 姓名 -->
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
+        朱旭
+      </h1>
+
+      <!-- 定位 -->
+      <p class="text-xl sm:text-2xl text-sky-400 font-semibold mb-6">
+        AI 应用开发 / RAG / Agent / Python 后端
+      </p>
+
+      <!-- 一句话介绍 -->
+      <p class="text-slate-400 text-lg leading-relaxed mb-10 max-w-xl">
+        专注于 LLM 应用落地，具备从知识库构建、检索增强到 Agent 编排的完整实践经验。
+        热衷于将前沿 AI 能力转化为真实业务价值，正在寻找 AI 应用开发 / 后端工程相关机会。
+      </p>
+
+      <!-- CTA 按钮组 -->
+      <div class="flex flex-wrap gap-4">
+        <a href="/projects"
+           class="px-6 py-3 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-sky-500/20">
+          查看代表项目
+        </a>
+        <a href="/agent"
+           class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
+          与 AI 对话
+        </a>
+        <a href="/static/resume/zhuxu-resume.pdf" download
+           class="px-6 py-3 text-slate-400 hover:text-white font-medium rounded-lg border border-slate-700 hover:border-slate-500 transition-colors flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          下载简历
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 代表项目 ==================== -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+  <div class="flex items-center justify-between mb-10">
+    <div>
+      <h2 class="text-2xl font-bold text-white">代表项目</h2>
+      <p class="text-slate-500 mt-1 text-sm">Selected Projects</p>
+    </div>
+    <a href="/projects" class="text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1">
+      全部项目
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+
+    <!-- 项目卡片 1 -->
+    <article class="group bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sky-500/50 transition-colors flex flex-col">
+      <div class="flex items-start justify-between mb-3">
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">工业 AI</span>
+        <span class="text-xs text-emerald-400 font-medium">已上线</span>
+      </div>
+      <h3 class="text-lg font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
+        法奥机器人智能客服 RAG 知识库
+      </h3>
+      <p class="text-slate-400 text-sm leading-relaxed flex-1">
+        为法奥意威机器人公司构建内部知识库问答系统，基于 RAG 架构实现产品手册、维修规范的智能检索与问答。
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2 mb-4">
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">RAG</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">LangChain</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">FastAPI</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">向量数据库</span>
+      </div>
+      <a href="/projects/fao-rag"
+         class="mt-auto text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1 font-medium">
+        查看详情
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </article>
+
+    <!-- 项目卡片 2 -->
+    <article class="group bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sky-500/50 transition-colors flex flex-col">
+      <div class="flex items-start justify-between mb-3">
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">嵌入式 / 硬件</span>
+        <span class="text-xs text-emerald-400 font-medium">已完成</span>
+      </div>
+      <h3 class="text-lg font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
+        血压测量规范化外接控制模块
+      </h3>
+      <p class="text-slate-400 text-sm leading-relaxed flex-1">
+        设计并实现血压测量设备的外接标准化控制模块，解决不同品牌设备接口不统一的问题，提升医疗数据采集规范性。
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2 mb-4">
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Python</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">串口通信</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">医疗设备</span>
+      </div>
+      <a href="/projects/blood-pressure"
+         class="mt-auto text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1 font-medium">
+        查看详情
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </article>
+
+    <!-- 项目卡片 3 -->
+    <article class="group bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sky-500/50 transition-colors flex flex-col">
+      <div class="flex items-start justify-between mb-3">
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">个人项目</span>
+        <span class="text-xs text-sky-400 font-medium">进行中</span>
+      </div>
+      <h3 class="text-lg font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
+        个人招聘展示 Agent
+      </h3>
+      <p class="text-slate-400 text-sm leading-relaxed flex-1">
+        即本站。基于 FastAPI + RAG + Agent 构建的个人招聘展示平台，HR 和面试官可通过 AI 对话了解我的经历与能力。
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2 mb-4">
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">FastAPI</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Agent</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">HTMX</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">SSE</span>
+      </div>
+      <a href="/projects/personal-agent"
+         class="mt-auto text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1 font-medium">
+        查看详情
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </article>
+
+    <!-- 项目卡片 4 -->
+    <article class="group bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sky-500/50 transition-colors flex flex-col">
+      <div class="flex items-start justify-between mb-3">
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">系统适配</span>
+        <span class="text-xs text-emerald-400 font-medium">已完成</span>
+      </div>
+      <h3 class="text-lg font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
+        OpenHarmony / UNISOC 系统适配
+      </h3>
+      <p class="text-slate-400 text-sm leading-relaxed flex-1">
+        参与 OpenHarmony 操作系统在 UNISOC 芯片平台上的 BSP 适配工作，涉及驱动移植、内核配置与系统验证。
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2 mb-4">
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">OpenHarmony</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Linux 内核</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">BSP</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">C</span>
+      </div>
+      <a href="/projects/openharmony-unisoc"
+         class="mt-auto text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1 font-medium">
+        查看详情
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </article>
+
+  </div>
+</section>
+
+<!-- ==================== 核心能力 ==================== -->
+<section class="border-t border-slate-800 bg-slate-900/40">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="text-center mb-12">
+      <h2 class="text-2xl font-bold text-white">核心能力</h2>
+      <p class="text-slate-500 mt-1 text-sm">Core Competencies</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
+      <!-- 能力卡片 1 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 text-center hover:border-sky-500/40 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white text-sm mb-1">RAG 与知识库</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">文档解析、向量检索、混合召回</p>
+      </div>
+
+      <!-- 能力卡片 2 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 text-center hover:border-sky-500/40 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white text-sm mb-1">Python 后端</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">FastAPI、异步编程、RESTful API</p>
+      </div>
+
+      <!-- 能力卡片 3 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 text-center hover:border-sky-500/40 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white text-sm mb-1">LLM 应用开发</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Prompt 工程、Agent 编排、流式输出</p>
+      </div>
+
+      <!-- 能力卡片 4 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 text-center hover:border-sky-500/40 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white text-sm mb-1">数据库与检索</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">PostgreSQL、Qdrant、Elasticsearch</p>
+      </div>
+
+      <!-- 能力卡片 5 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 text-center hover:border-sky-500/40 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white text-sm mb-1">工程部署</h3>
+        <p class="text-xs text-slate-500 leading-relaxed">Docker、Linux、CI/CD 基础</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 推荐提问 ==================== -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+  <div class="text-center mb-10">
+    <h2 class="text-2xl font-bold text-white">想了解更多？</h2>
+    <p class="text-slate-500 mt-2 text-sm">点击问题，与 AI 直接对话</p>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-3xl mx-auto">
+    <button onclick="askQuestion('朱旭做过哪些 RAG 项目？效果如何？')"
+            class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
+      朱旭做过哪些 RAG 项目？效果如何？
+    </button>
+    <button onclick="askQuestion('他的 Python 和后端技术栈是什么？')"
+            class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
+      他的 Python 和后端技术栈是什么？
+    </button>
+    <button onclick="askQuestion('他在团队协作中担任什么角色？')"
+            class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
+      他在团队协作中担任什么角色？
+    </button>
+    <button onclick="askQuestion('他有哪些实习经历？')"
+            class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
+      他有哪些实习经历？
+    </button>
+    <button onclick="askQuestion('他为什么想做 AI 应用方向？')"
+            class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
+      他为什么想做 AI 应用方向？
+    </button>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+  function askQuestion(q) {
+    window.location.href = '/agent?q=' + encodeURIComponent(q);
+  }
+</script>
+{% endblock %}

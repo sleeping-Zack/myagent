@@ -1,0 +1,481 @@
+{% extends "base.html" %}
+{% set active_page = 'agent' %}
+
+{% block title %}AI 问答 | 朱旭{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* 打字光标 */
+  .typing-cursor::after {
+    content: '▋';
+    display: inline-block;
+    animation: blink 1s step-end infinite;
+    color: #38bdf8;
+    margin-left: 1px;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  /* 对话区滚动 */
+  #chat-messages {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 transparent;
+  }
+  #chat-messages::-webkit-scrollbar {
+    width: 4px;
+  }
+  #chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #chat-messages::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 2px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-4rem)]">
+
+  <!-- 页面标题（移动端） -->
+  <div class="lg:hidden mb-6">
+    <h1 class="text-2xl font-bold text-white">AI 问答</h1>
+    <p class="text-sm text-slate-400 mt-1">基于朱旭的个人知识库，用 AI 了解他的经历与技术。</p>
+  </div>
+
+  <!-- 双栏布局 -->
+  <div class="flex flex-col lg:flex-row gap-6 h-full lg:h-[calc(100vh-8rem)]">
+
+    <!-- 左侧：对话区（60%） -->
+    <div class="flex flex-col flex-1 lg:w-[60%] lg:max-w-none min-h-[500px] lg:min-h-0">
+
+      <!-- 标题（桌面端） -->
+      <div class="hidden lg:block mb-4">
+        <h1 class="text-2xl font-bold text-white">AI 问答</h1>
+        <p class="text-sm text-slate-400 mt-1">基于朱旭的个人知识库，用 AI 了解他的经历与技术。</p>
+      </div>
+
+      <!-- 消息列表 -->
+      <div id="chat-messages"
+           class="flex-1 overflow-y-auto rounded-xl bg-slate-900 border border-slate-700 p-4 space-y-4 mb-4">
+
+        <!-- 欢迎消息 -->
+        <div class="flex gap-3 items-start" id="welcome-msg">
+          <div class="w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center shrink-0 text-white text-sm font-bold mt-0.5">
+            AI
+          </div>
+          <div class="flex-1">
+            <div class="inline-block bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-slate-300 text-sm leading-relaxed max-w-lg">
+              你好！我是朱旭的 AI 助手，基于他的个人公开知识库构建。<br>
+              你可以问我关于他的项目经历、技术栈、学习背景等问题。
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 推荐问题（初始显示） -->
+      <div id="suggested-questions" class="mb-3">
+        <p class="text-xs text-slate-500 mb-2">推荐问题：</p>
+        <div class="flex flex-wrap gap-2">
+          {% set suggestions = [
+            "介绍一下朱旭的背景",
+            "法奥机器人RAG项目是怎么做的？",
+            "他有哪些 Python 后端经验？",
+            "血压模块项目解决了什么问题？",
+            "他熟悉哪些 AI/LLM 技术？",
+            "个人展示 Agent 是如何实现的？",
+            "他的求职意向是什么？"
+          ] %}
+          {% for q in suggestions %}
+          <button type="button"
+                  onclick="fillAndSend(this.textContent.trim())"
+                  class="text-xs text-sky-400 bg-sky-900/30 border border-sky-800/50 hover:bg-sky-900/60 hover:border-sky-700 rounded-full px-3 py-1.5 transition-colors">
+            {{ q }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- 输入区 -->
+      <div class="relative">
+        <div class="flex gap-2 items-end bg-slate-800 border border-slate-700 focus-within:border-sky-600 rounded-xl p-3 transition-colors">
+          <textarea
+            id="chat-input"
+            rows="1"
+            maxlength="500"
+            placeholder="输入问题，了解朱旭的经历与技术…"
+            class="flex-1 bg-transparent text-slate-200 placeholder-slate-500 text-sm resize-none outline-none leading-relaxed max-h-32"
+            oninput="onInputChange(this)"
+            onkeydown="handleKeyDown(event)"
+          ></textarea>
+          <div class="flex items-center gap-2 shrink-0">
+            <span id="char-count" class="text-xs text-slate-600">0/500</span>
+            <button id="send-btn"
+                    type="button"
+                    onclick="sendMessage()"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-slate-600 mt-1.5 px-1">Enter 发送 · Shift+Enter 换行</p>
+      </div>
+
+    </div><!-- /左侧 -->
+
+    <!-- 右侧：证据来源区（40%） -->
+    <div class="lg:w-[38%] shrink-0 flex flex-col min-h-[300px] lg:min-h-0">
+      <div class="flex flex-col flex-1 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+
+        <!-- 来源标题 -->
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-700 bg-slate-800/50">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="text-sm font-medium text-slate-300">参考来源</span>
+          <span id="source-count" class="ml-auto text-xs text-slate-500 hidden">0 条</span>
+        </div>
+
+        <!-- 来源内容 -->
+        <div id="citation-panel" class="flex-1 overflow-y-auto p-4 space-y-3
+                                        scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+
+          <!-- 空状态 -->
+          <div id="citation-empty" class="flex flex-col items-center justify-center h-full text-center py-8">
+            <svg class="w-10 h-10 text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            <p class="text-sm text-slate-600">发送问题后，AI 引用的知识来源<br>会显示在这里。</p>
+          </div>
+
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="px-4 py-3 border-t border-slate-700 bg-slate-800/30">
+          <p class="text-xs text-slate-600 leading-relaxed">
+            AI 回答基于个人公开知识库，内容可能有偏差。<br>请以简历和实际面谈为准。
+          </p>
+        </div>
+
+      </div>
+    </div><!-- /右侧 -->
+
+  </div><!-- /双栏 -->
+</div>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+  // ─── 状态 ─────────────────────────────────────────────────────────────────
+  let isStreaming = false;
+  let currentAiMsgEl = null;
+  let currentAiTextEl = null;
+  let sourceCount = 0;
+
+  // ─── 输入框事件 ────────────────────────────────────────────────────────────
+  function onInputChange(textarea) {
+    // 自适应高度
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
+    // 字数计数
+    document.getElementById('char-count').textContent = textarea.value.length + '/500';
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  // ─── 填充并发送（推荐问题点击） ────────────────────────────────────────────
+  function fillAndSend(text) {
+    const input = document.getElementById('chat-input');
+    input.value = text;
+    onInputChange(input);
+    sendMessage();
+  }
+
+  // ─── 追加用户消息气泡 ──────────────────────────────────────────────────────
+  function appendUserMessage(text) {
+    const container = document.getElementById('chat-messages');
+    const el = document.createElement('div');
+    el.className = 'flex gap-3 items-start justify-end';
+    el.innerHTML = `
+      <div class="flex-1 flex justify-end">
+        <div class="inline-block bg-sky-700 border border-sky-600 rounded-2xl rounded-tr-sm px-4 py-3 text-white text-sm leading-relaxed max-w-sm whitespace-pre-wrap break-words">${escapeHtml(text)}</div>
+      </div>
+      <div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center shrink-0 text-white text-xs font-bold mt-0.5">我</div>
+    `;
+    container.appendChild(el);
+    scrollToBottom();
+  }
+
+  // ─── 创建 AI 消息气泡（流式） ─────────────────────────────────────────────
+  function createAiMessageBubble() {
+    const container = document.getElementById('chat-messages');
+    const el = document.createElement('div');
+    el.className = 'flex gap-3 items-start';
+    el.innerHTML = `
+      <div class="w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center shrink-0 text-white text-sm font-bold mt-0.5">AI</div>
+      <div class="flex-1">
+        <div class="inline-block bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-slate-300 text-sm leading-relaxed max-w-lg">
+          <span class="ai-text typing-cursor"></span>
+        </div>
+      </div>
+    `;
+    container.appendChild(el);
+    currentAiMsgEl = el;
+    currentAiTextEl = el.querySelector('.ai-text');
+    scrollToBottom();
+  }
+
+  // ─── 追加 token 到当前 AI 消息 ────────────────────────────────────────────
+  function appendToken(token) {
+    if (!currentAiTextEl) return;
+    // 用 textContent 累积，保留换行
+    currentAiTextEl.textContent += token;
+    scrollToBottom();
+  }
+
+  // ─── 完成流式输出 ─────────────────────────────────────────────────────────
+  function finishStreaming() {
+    if (currentAiTextEl) {
+      currentAiTextEl.classList.remove('typing-cursor');
+    }
+    isStreaming = false;
+    currentAiMsgEl = null;
+    currentAiTextEl = null;
+    setButtonState(false);
+  }
+
+  // ─── 渲染来源卡片 ─────────────────────────────────────────────────────────
+  function renderCitation(citation) {
+    const panel = document.getElementById('citation-panel');
+    // 隐藏空状态
+    const empty = document.getElementById('citation-empty');
+    if (empty) empty.style.display = 'none';
+
+    sourceCount++;
+    document.getElementById('source-count').textContent = sourceCount + ' 条';
+    document.getElementById('source-count').classList.remove('hidden');
+
+    const typeColors = {
+      'project': 'text-sky-400 bg-sky-900/40 border-sky-700/40',
+      'experience': 'text-violet-400 bg-violet-900/40 border-violet-700/40',
+      'skill': 'text-emerald-400 bg-emerald-900/40 border-emerald-700/40',
+      'resume': 'text-amber-400 bg-amber-900/40 border-amber-700/40',
+    };
+    const typeColor = typeColors[citation.source_type] || 'text-slate-400 bg-slate-800 border-slate-700';
+    const typeLabel = citation.source_type || '文档';
+
+    const card = document.createElement('div');
+    card.className = 'bg-slate-800/60 border border-slate-700 rounded-lg p-3 text-xs';
+    card.innerHTML = `
+      <div class="flex items-start gap-2 mb-1.5">
+        <span class="font-medium text-white leading-snug flex-1">${escapeHtml(citation.title || '未命名来源')}</span>
+        <span class="shrink-0 ${typeColor} border rounded px-1.5 py-0.5 font-medium">${escapeHtml(typeLabel)}</span>
+      </div>
+      ${citation.content ? `<p class="text-slate-400 leading-relaxed line-clamp-3">${escapeHtml(citation.content)}</p>` : ''}
+      ${citation.score !== undefined ? `<p class="text-slate-600 mt-1.5">相关度：${(citation.score * 100).toFixed(0)}%</p>` : ''}
+    `;
+    panel.appendChild(card);
+  }
+
+  // ─── 清空来源面板 ─────────────────────────────────────────────────────────
+  function clearCitationPanel() {
+    const panel = document.getElementById('citation-panel');
+    panel.innerHTML = `
+      <div id="citation-empty" class="flex flex-col items-center justify-center h-full text-center py-8">
+        <svg class="w-10 h-10 text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        <p class="text-sm text-slate-600">发送问题后，AI 引用的知识来源<br>会显示在这里。</p>
+      </div>
+    `;
+    sourceCount = 0;
+    document.getElementById('source-count').classList.add('hidden');
+  }
+
+  // ─── 发送消息主函数 ────────────────────────────────────────────────────────
+  async function sendMessage() {
+    if (isStreaming) return;
+
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // 清空输入框
+    input.value = '';
+    input.style.height = 'auto';
+    document.getElementById('char-count').textContent = '0/500';
+
+    // 隐藏推荐问题
+    document.getElementById('suggested-questions').style.display = 'none';
+
+    // 显示用户消息
+    appendUserMessage(text);
+
+    // 清空来源面板
+    clearCitationPanel();
+
+    // 创建 AI 消息气泡
+    createAiMessageBubble();
+
+    isStreaming = true;
+    setButtonState(true);
+
+    try {
+      const resp = await fetch('/api/v1/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text, stream: true }),
+      });
+
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // 处理 SSE 行
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // 保留最后一行（可能不完整）
+
+        let currentEventType = null;
+        for (const line of lines) {
+          if (line.startsWith('event:')) {
+            currentEventType = line.slice(6).trim();
+          } else if (line.startsWith('data:')) {
+            const dataStr = line.slice(5).trim();
+            if (!dataStr || dataStr === '[DONE]') continue;
+            let data;
+            try {
+              data = JSON.parse(dataStr);
+            } catch {
+              continue;
+            }
+            handleSSEEvent(currentEventType, data);
+            currentEventType = null;
+          }
+        }
+      }
+
+    } catch (err) {
+      console.error('Chat error:', err);
+      if (currentAiTextEl) {
+        currentAiTextEl.textContent = '请求出错，请稍后重试。';
+        currentAiTextEl.classList.remove('typing-cursor');
+      }
+    } finally {
+      finishStreaming();
+    }
+  }
+
+  // ─── 处理单条 SSE 事件 ────────────────────────────────────────────────────
+  function handleSSEEvent(eventType, data) {
+    switch (eventType) {
+      case 'meta':
+        break;
+
+      case 'source':
+        renderCitation(data);
+        break;
+
+      case 'token':
+        appendToken(data.content ?? '');
+        break;
+
+      case 'done':
+        finishStreaming();
+        showFollowUpSuggestions(data?.suggestions);
+        break;
+
+      case 'error':
+        if (currentAiTextEl) {
+          currentAiTextEl.textContent = data?.message || '回答时发生错误。';
+          currentAiTextEl.classList.remove('typing-cursor');
+        }
+        finishStreaming();
+        break;
+    }
+  }
+
+  // ─── 显示追问建议 ─────────────────────────────────────────────────────────
+  function showFollowUpSuggestions(suggestions) {
+    if (!suggestions || !suggestions.length) return;
+    const container = document.getElementById('chat-messages');
+    const el = document.createElement('div');
+    el.className = 'flex gap-3 items-start';
+    el.innerHTML = `
+      <div class="w-8 h-8 shrink-0"></div>
+      <div class="flex-1">
+        <p class="text-xs text-slate-500 mb-2">你可以继续问：</p>
+        <div class="flex flex-wrap gap-2">
+          ${suggestions.map(s => `
+            <button type="button" onclick="fillAndSend(this.textContent.trim())"
+                    class="text-xs text-sky-400 bg-sky-900/30 border border-sky-800/50 hover:bg-sky-900/60 rounded-full px-3 py-1.5 transition-colors">
+              ${escapeHtml(s)}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    container.appendChild(el);
+    scrollToBottom();
+  }
+
+  // ─── 工具函数 ──────────────────────────────────────────────────────────────
+  function scrollToBottom() {
+    const container = document.getElementById('chat-messages');
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function setButtonState(loading) {
+    const btn = document.getElementById('send-btn');
+    btn.disabled = loading;
+  }
+
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ─── URL 参数 q 自动发送 ───────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q && q.trim()) {
+      // 短暂延迟确保 DOM 就绪
+      setTimeout(() => {
+        document.getElementById('chat-input').value = q.trim();
+        onInputChange(document.getElementById('chat-input'));
+        sendMessage();
+      }, 200);
+    }
+  });
+</script>
+{% endblock %}

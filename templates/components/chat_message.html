@@ -1,0 +1,64 @@
+{% macro chat_message(role, content, is_streaming=false) %}
+{% if role == 'user' %}
+<!-- 用户消息 -->
+<div class="flex justify-end gap-3 mb-4">
+  <div class="max-w-[80%]">
+    <div class="bg-sky-600 text-white text-sm rounded-2xl rounded-tr-sm px-4 py-2.5 leading-relaxed">
+      {{ content }}
+    </div>
+    <p class="text-xs text-slate-600 mt-1 text-right">你</p>
+  </div>
+  <div class="shrink-0 w-7 h-7 bg-sky-600 rounded-full flex items-center justify-center mt-0.5">
+    <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+    </svg>
+  </div>
+</div>
+
+{% elif role == 'assistant' %}
+<!-- AI 消息 -->
+<div class="flex gap-3 mb-4">
+  <div class="shrink-0 w-7 h-7 bg-gradient-to-br from-violet-600 to-sky-500 rounded-full flex items-center justify-center mt-0.5">
+    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+    </svg>
+  </div>
+  <div class="flex-1 min-w-0">
+    <p class="text-xs text-slate-500 mb-1">朱旭的 AI 助手</p>
+    <div class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 leading-relaxed prose-sm prose-invert max-w-none
+                {% if is_streaming %}streaming-cursor{% endif %}">
+      {% if content %}
+        {{ content | safe }}
+      {% else %}
+        <span class="text-slate-500 italic">正在思考...</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% elif role == 'system' %}
+<!-- 系统提示消息 -->
+<div class="flex justify-center mb-4">
+  <div class="bg-slate-800/50 border border-slate-700/50 text-slate-500 text-xs rounded-full px-4 py-1.5">
+    {{ content }}
+  </div>
+</div>
+
+{% elif role == 'error' %}
+<!-- 错误消息 -->
+<div class="flex gap-3 mb-4">
+  <div class="shrink-0 w-7 h-7 bg-red-900 rounded-full flex items-center justify-center mt-0.5">
+    <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+    </svg>
+  </div>
+  <div class="flex-1">
+    <div class="bg-red-950 border border-red-800/50 text-red-300 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5">
+      {{ content }}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endmacro %}

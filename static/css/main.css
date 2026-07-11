@@ -1,0 +1,236 @@
+/* ============================================================
+   personal-agent — main.css
+   最小自定义样式，其余交由 Tailwind CSS 处理
+   ============================================================ */
+
+/* ── 平滑滚动 ─────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── 流式打字光标动画 ──────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.typing-cursor::after {
+  content: "▋";
+  display: inline-block;
+  margin-left: 1px;
+  color: #a78bfa; /* violet-400 */
+  animation: blink 0.8s step-end infinite;
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+/* ── 聊天消息容器滚动 ─────────────────────────────────────── */
+#chat-messages {
+  scroll-behavior: smooth;
+}
+
+/* 隐藏滚动条（保留功能，仅视觉隐藏） */
+#chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+#chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+#chat-messages::-webkit-scrollbar-thumb {
+  background-color: #334155; /* slate-700 */
+  border-radius: 2px;
+}
+#chat-messages::-webkit-scrollbar-thumb:hover {
+  background-color: #475569; /* slate-600 */
+}
+
+/* ── 代码块样式 ───────────────────────────────────────────── */
+.prose-content pre,
+.project-content pre {
+  background-color: #0f172a; /* slate-950 */
+  border: 1px solid #1e293b; /* slate-800 */
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  margin: 1rem 0;
+}
+
+.prose-content pre code,
+.project-content pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: #e2e8f0; /* slate-200 */
+}
+
+/* 行内代码 */
+.prose-content code,
+.project-content code {
+  background-color: #1e293b; /* slate-800 */
+  color: #a78bfa; /* violet-400 */
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* 聊天气泡内的代码块 */
+.chat-bubble pre {
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  margin: 0.5rem 0;
+}
+
+.chat-bubble pre code {
+  background: none;
+  padding: 0;
+  color: #e2e8f0;
+  font-size: inherit;
+}
+
+.chat-bubble code {
+  background-color: rgba(15, 23, 42, 0.7);
+  color: #a78bfa;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+/* ── 项目详情正文排版 ─────────────────────────────────────── */
+.project-content h1,
+.project-content h2,
+.project-content h3,
+.project-content h4 {
+  color: #f1f5f9; /* slate-100 */
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.project-content h1 { font-size: 1.5rem; }
+.project-content h2 { font-size: 1.25rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.4rem; }
+.project-content h3 { font-size: 1.1rem; }
+
+.project-content p {
+  color: #94a3b8; /* slate-400 */
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.project-content ul,
+.project-content ol {
+  color: #94a3b8;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.project-content li {
+  margin-bottom: 0.35rem;
+  line-height: 1.7;
+}
+
+.project-content ul li::marker { color: #7c3aed; } /* violet-700 */
+.project-content ol li::marker { color: #7c3aed; }
+
+.project-content blockquote {
+  border-left: 3px solid #7c3aed;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #64748b; /* slate-500 */
+  font-style: italic;
+}
+
+.project-content a {
+  color: #a78bfa; /* violet-400 */
+  text-decoration: underline;
+  text-decoration-color: #4c1d95;
+}
+
+.project-content a:hover {
+  color: #c4b5fd; /* violet-300 */
+}
+
+.project-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.project-content th {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border: 1px solid #334155;
+}
+
+.project-content td {
+  color: #94a3b8;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #1e293b;
+}
+
+.project-content tr:nth-child(even) td {
+  background-color: #0f172a;
+}
+
+/* ── 推荐问题按钮 hover 状态 ──────────────────────────────── */
+.suggested-question {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* ── 卡片 hover 提升效果 ─────────────────────────────────── */
+.project-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* ── 焦点样式（无障碍） ───────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+/* ── 页面过渡淡入 ─────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* ── 来源面板条目淡入 ─────────────────────────────────────── */
+#citation-panel > div {
+  animation: fadeIn 0.25s ease forwards;
+}
+
+/* ── line-clamp 兼容（部分旧浏览器） ─────────────────────── */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

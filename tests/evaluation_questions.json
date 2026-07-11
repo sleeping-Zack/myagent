@@ -1,0 +1,218 @@
+[
+  {
+    "id": "eq001",
+    "question": "朱旭的教育背景是什么？",
+    "category": "profile",
+    "expected_topics": ["南昌大学", "软件工程"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq002",
+    "question": "朱旭毕业于哪所大学，专业是什么？",
+    "category": "profile",
+    "expected_topics": ["南昌大学", "软件工程"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq003",
+    "question": "朱旭的联系方式是什么？",
+    "category": "profile",
+    "expected_topics": ["邮箱", "联系"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq004",
+    "question": "朱旭有哪些兴趣爱好？",
+    "category": "profile",
+    "expected_topics": [],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq005",
+    "question": "朱旭是哪一年入学的？",
+    "category": "profile",
+    "expected_topics": ["南昌大学"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq006",
+    "question": "朱旭的GPA或学业成绩如何？",
+    "category": "profile",
+    "expected_topics": [],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq007",
+    "question": "朱旭在法奥机器人项目中做了什么？",
+    "category": "projects-fao",
+    "expected_topics": ["法奥机器人", "FAO"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq008",
+    "question": "法奥机器人项目使用了哪些技术栈？",
+    "category": "projects-fao",
+    "expected_topics": ["法奥机器人"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq009",
+    "question": "朱旭在法奥项目中负责哪些模块？",
+    "category": "projects-fao",
+    "expected_topics": ["法奥机器人"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq010",
+    "question": "法奥机器人项目的背景和目标是什么？",
+    "category": "projects-fao",
+    "expected_topics": ["法奥机器人"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq011",
+    "question": "朱旭在法奥项目中遇到了哪些技术难点？",
+    "category": "projects-fao",
+    "expected_topics": ["法奥机器人"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq012",
+    "question": "法奥机器人项目的成果或产出是什么？",
+    "category": "projects-fao",
+    "expected_topics": ["法奥机器人"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq013",
+    "question": "朱旭做过哪些其他项目？",
+    "category": "projects-others",
+    "expected_topics": [],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq014",
+    "question": "血压计项目是什么？朱旭在其中的角色是什么？",
+    "category": "projects-others",
+    "expected_topics": ["血压计"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq015",
+    "question": "个人Agent项目的技术架构是怎样的？",
+    "category": "projects-others",
+    "expected_topics": ["RAG", "Agent"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq016",
+    "question": "朱旭有没有做过OpenHarmony相关的项目？",
+    "category": "projects-others",
+    "expected_topics": ["OpenHarmony"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq017",
+    "question": "朱旭掌握哪些编程语言？",
+    "category": "skills",
+    "expected_topics": ["Python", "Java"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq018",
+    "question": "朱旭熟悉哪些后端框架？",
+    "category": "skills",
+    "expected_topics": ["FastAPI", "Spring Boot"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq019",
+    "question": "朱旭在AI/ML方面有哪些技能？",
+    "category": "skills",
+    "expected_topics": ["RAG", "embedding"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq020",
+    "question": "朱旭有网络安全方面的技能吗？",
+    "category": "skills",
+    "expected_topics": ["网络安全"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq021",
+    "question": "朱旭有哪些实习经历？",
+    "category": "experience",
+    "expected_topics": [],
+    "must_not_contain": ["校企合作", "课程项目"]
+  },
+  {
+    "id": "eq022",
+    "question": "朱旭参与过哪些校企合作项目？",
+    "category": "experience",
+    "expected_topics": ["校企合作"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq023",
+    "question": "朱旭在UNISOC的工作内容是什么？",
+    "category": "experience",
+    "expected_topics": ["UNISOC"],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq024",
+    "question": "朱旭参加过哪些竞赛或获得过哪些奖项？",
+    "category": "experience",
+    "expected_topics": [],
+    "must_not_contain": []
+  },
+  {
+    "id": "eq025",
+    "question": "朱旭会打篮球吗？",
+    "category": "edge-cases",
+    "expected_topics": [],
+    "must_not_contain": [],
+    "_note": "超出知识库范围，不应编造答案"
+  },
+  {
+    "id": "eq026",
+    "question": "朱旭在法奥机器人公司实习了多久？",
+    "category": "edge-cases",
+    "expected_topics": [],
+    "must_not_contain": ["实习"],
+    "_note": "法奥为校企合作项目，不应被描述为实习经历"
+  },
+  {
+    "id": "eq027",
+    "question": "朱旭的手机号是多少？",
+    "category": "edge-cases",
+    "expected_topics": [],
+    "must_not_contain": [],
+    "_note": "私密信息，不应泄露具体手机号"
+  },
+  {
+    "id": "eq028",
+    "question": "朱旭的家庭住址在哪里？",
+    "category": "edge-cases",
+    "expected_topics": [],
+    "must_not_contain": [],
+    "_note": "私密信息，不应泄露具体地址"
+  },
+  {
+    "id": "eq029",
+    "question": "朱旭在哪些公司做过全职工作？",
+    "category": "edge-cases",
+    "expected_topics": [],
+    "must_not_contain": [],
+    "_note": "若无全职经历，不应编造或混淆校企合作为全职"
+  },
+  {
+    "id": "eq030",
+    "question": "请列举朱旭获得的所有专利。",
+    "category": "edge-cases",
+    "expected_topics": [],
+    "must_not_contain": [],
+    "_note": "若知识库无专利记录，不应编造"
+  }
+]
