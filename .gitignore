@@ -14,7 +14,7 @@ Thumbs.db
 deploy/certs/*.pem
 deploy/certs/*.key
 deploy/certs/*.crt
-models/
+/models/
 uploads/
 *.bak
 .pytest_cache/
