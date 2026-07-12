@@ -78,22 +78,23 @@
     <!-- 项目卡片 1 -->
     <article class="group bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sky-500/50 transition-colors flex flex-col">
       <div class="flex items-start justify-between mb-3">
-        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">工业 AI</span>
-        <span class="text-xs text-emerald-400 font-medium">已上线</span>
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">个人主导项目</span>
+        <span class="text-xs text-sky-400 font-medium">进行中</span>
       </div>
       <h3 class="text-lg font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
-        法奥机器人智能客服 RAG 知识库
+        智扫通机器人智能客服 Agent
       </h3>
       <p class="text-slate-400 text-sm leading-relaxed flex-1">
-        为法奥意威机器人公司构建内部知识库问答系统，基于 RAG 架构实现产品手册、维修规范的智能检索与问答。
+        面向扫地机器人故障排查与维护的 RAG + 多工具 Agent + Harness 控制层系统，重点解决 Agent 可控性问题：预算、权限、审批、答案验证和可观测。
       </p>
       <div class="mt-4 flex flex-wrap gap-2 mb-4">
         <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">RAG</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">ReAct Agent</span>
         <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">LangChain</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">FastAPI</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">向量数据库</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">MCP</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">HITL</span>
       </div>
-      <a href="/projects/fao-rag"
+      <a href="/projects/agentproject"
          class="mt-auto text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1 font-medium">
         查看详情
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,21 +106,23 @@
     <!-- 项目卡片 2 -->
     <article class="group bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sky-500/50 transition-colors flex flex-col">
       <div class="flex items-start justify-between mb-3">
-        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">嵌入式 / 硬件</span>
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">校企合作</span>
         <span class="text-xs text-emerald-400 font-medium">已完成</span>
       </div>
       <h3 class="text-lg font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
-        血压测量规范化外接控制模块
+        法奥机器人智能客服平台
       </h3>
       <p class="text-slate-400 text-sm leading-relaxed flex-1">
-        设计并实现血压测量设备的外接标准化控制模块，解决不同品牌设备接口不统一的问题，提升医疗数据采集规范性。
+        基于 AIFlowy 的企业级二次开发，构建机器人技术咨询 Agent 客服工作台，覆盖 Direct/Agentic 路由、Agent 动态规划、QA 数据沉淀和售后工单。
       </p>
       <div class="mt-4 flex flex-wrap gap-2 mb-4">
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Python</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">串口通信</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">医疗设备</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Java</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Spring Boot</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Vue 3</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">AIFlowy</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">SSE</span>
       </div>
-      <a href="/projects/blood-pressure"
+      <a href="/projects/farino"
          class="mt-auto text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1 font-medium">
         查看详情
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,18 +138,18 @@
         <span class="text-xs text-sky-400 font-medium">进行中</span>
       </div>
       <h3 class="text-lg font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
-        个人招聘展示 Agent
+        朱旭个人招聘知识 Agent
       </h3>
       <p class="text-slate-400 text-sm leading-relaxed flex-1">
-        即本站。基于 FastAPI + RAG + Agent 构建的个人招聘展示平台，HR 和面试官可通过 AI 对话了解我的经历与能力。
+        即本站。面向 HR 和技术面试官的个人知识问答网站，基于 pgvector + DeepSeek 构建 RAG 服务，支持流式对话和引用溯源。
       </p>
       <div class="mt-4 flex flex-wrap gap-2 mb-4">
         <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">FastAPI</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Agent</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">HTMX</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">pgvector</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">DeepSeek</span>
         <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">SSE</span>
       </div>
-      <a href="/projects/personal-agent"
+      <a href="/projects/myagent"
          class="mt-auto text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1 font-medium">
         查看详情
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,22 +161,22 @@
     <!-- 项目卡片 4 -->
     <article class="group bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sky-500/50 transition-colors flex flex-col">
       <div class="flex items-start justify-between mb-3">
-        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">系统适配</span>
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">个人机器学习项目</span>
         <span class="text-xs text-emerald-400 font-medium">已完成</span>
       </div>
       <h3 class="text-lg font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
-        OpenHarmony / UNISOC 系统适配
+        情绪分析日记与 AI 心情助手
       </h3>
       <p class="text-slate-400 text-sm leading-relaxed flex-1">
-        参与 OpenHarmony 操作系统在 UNISOC 芯片平台上的 BSP 适配工作，涉及驱动移植、内核配置与系统验证。
+        面向大学生日记场景的中文情绪五分类系统，使用 jieba + TF-IDF + 传统机器学习模型本地推理，集成 Django Web 应用。
       </p>
       <div class="mt-4 flex flex-wrap gap-2 mb-4">
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">OpenHarmony</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Linux 内核</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">BSP</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">C</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">scikit-learn</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">jieba</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">TF-IDF</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">Django</span>
       </div>
-      <a href="/projects/openharmony-unisoc"
+      <a href="/projects/mood_tracker"
          class="mt-auto text-sm text-sky-400 hover:text-sky-300 flex items-center gap-1 font-medium">
         查看详情
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

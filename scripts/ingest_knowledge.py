@@ -47,9 +47,7 @@ from app.models.chunk import DocumentChunk
 # ---------------------------------------------------------------------------
 
 KNOWLEDGE_DIR = PROJECT_ROOT / "knowledge"
-REQUIRED_FIELDS = {"id", "title", "type", "visibility", "confidence"}
-ALLOWED_VISIBILITY = {"public"}
-ALLOWED_CONFIDENCE = {"confirmed", "self_reported"}
+SKIP_DIRS = {"data", "prompts", "sources"}  # 非文章目录，跳过
 
 # chunk 大小上限（中文字符数）
 CHUNK_MAX_CHARS = 500
@@ -324,23 +322,32 @@ async def ingest_all(
 
             meta, body = parse_front_matter(raw)
 
-            # 验证必填字段
-            missing = REQUIRED_FIELDS - set(meta.keys())
-            if missing:
-                print(f"  [跳过] 缺少必填字段 {missing}: {rel_path}")
+            # 跳过非文章目录（data/prompts/sources）
+            rel_parts = rel_path.parts
+            if len(rel_parts) > 2 and rel_parts[1] in SKIP_DIRS:
                 stats["files_skipped_filter"] += 1
                 continue
 
-            # 过滤 visibility 和 confidence
-            if meta.get("visibility") not in ALLOWED_VISIBILITY:
-                print(f"  [跳过] visibility={meta.get('visibility')}: {rel_path}")
+            # 明确标记 private 才跳过，其他一律导入
+            if meta.get("visibility") == "private":
+                print(f"  [跳过] visibility=private: {rel_path}")
                 stats["files_skipped_filter"] += 1
                 continue
 
-            if meta.get("confidence") not in ALLOWED_CONFIDENCE:
-                print(f"  [跳过] confidence={meta.get('confidence')}: {rel_path}")
-                stats["files_skipped_filter"] += 1
-                continue
+            # 自动补全缺失字段
+            if "id" not in meta:
+                meta["id"] = md_path.stem
+            if "title" not in meta:
+                # 从文件第一个 H1 标题提取，否则用文件名
+                import re as _re
+                h1 = _re.search(r"^#\s+(.+)", body, _re.MULTILINE)
+                meta["title"] = h1.group(1).strip() if h1 else md_path.stem
+            if "type" not in meta:
+                meta["type"] = "profile"
+            if "visibility" not in meta:
+                meta["visibility"] = "public"
+            if "confidence" not in meta:
+                meta["confidence"] = "self_reported"
 
             processed_source_ids.add(source_id)
 

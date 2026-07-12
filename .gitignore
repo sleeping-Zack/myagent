@@ -20,3 +20,7 @@ uploads/
 .pytest_cache/
 htmlcov/
 .coverage
+_kb_backup/
+_kb_extract_tmp/
+knowledge/02_private_profile.md
+knowledge/data/
