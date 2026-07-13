@@ -11,3 +11,4 @@ class CitationOut(BaseModel):
     content_preview: str  # 前150字
     project_slug: Optional[str] = None
     tags: list[str] = []
+    ranking_score: float

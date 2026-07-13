@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.repositories.conversation_repository import ConversationRepository
 from app.schemas.chat import FeedbackRequest
+from app.core.config import get_settings
+from app.core.rate_limit import feedback_rate_limiter
+from app.core.security import hash_ip
 import uuid
 
 router = APIRouter(prefix="/api/v1/messages")
@@ -12,12 +15,37 @@ router = APIRouter(prefix="/api/v1/messages")
 async def submit_feedback(
     message_id: str,
     body: FeedbackRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
+    settings = get_settings()
+    client_ip = request.headers.get("x-real-ip") or (
+        request.client.host if request.client else "unknown"
+    )
+    if not feedback_rate_limiter.allow(
+        hash_ip(client_ip),
+        minute_limit=settings.feedback_ip_minute_limit,
+        daily_limit=settings.feedback_daily_limit,
+    ):
+        raise HTTPException(
+            status_code=429,
+            detail="反馈提交过于频繁，请稍后再试",
+            headers={"Retry-After": "60"},
+        )
     try:
         mid = uuid.UUID(message_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="无效的 message_id")
-    repo = ConversationRepository(db)
-    await repo.save_feedback(mid, body.rating, body.reason, body.comment)
+    repo = ConversationRepository()
+    if not await repo.message_belongs_to_conversation(
+        db, mid, body.conversation_id
+    ):
+        raise HTTPException(status_code=404, detail="消息不属于当前会话")
+
+    await repo.save_feedback(db, {
+        "message_id": mid,
+        "rating": body.rating,
+        "reason": body.reason,
+        "comment": body.comment,
+    })
     return {"ok": True}

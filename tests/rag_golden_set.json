@@ -1,0 +1,20 @@
+[
+  {"id":"profile-01","category":"基本信息","question":"朱旭的学校、专业和毕业届别是什么？","expected_sources":["00_master_profile.md","01_public_profile.md"]},
+  {"id":"profile-02","category":"基本信息","question":"朱旭当前希望寻找什么方向的实习？","expected_sources":["00_master_profile.md","01_public_profile.md"]},
+  {"id":"profile-03","category":"基本信息","question":"如何联系朱旭并查看他的 GitHub？","expected_sources":["01_public_profile.md"]},
+  {"id":"intern-01","category":"实习经历","question":"朱旭在长冈医疗科技有限公司做了什么？","expected_sources":["changgang_embedded_internship.md","00_master_profile.md","06_hr_interview_qa.md"]},
+  {"id":"intern-02","category":"实习经历","question":"血压计程控电路项目涉及哪些控制和调试工作？","expected_sources":["changgang_embedded_internship.md"]},
+  {"id":"agent-01","category":"智扫通项目","question":"智扫通机器人客服 Agent 的整体架构是什么？","expected_sources":["agentproject.md","agentprojectREADME.md"]},
+  {"id":"agent-02","category":"智扫通项目","question":"Dense、BM25 和 RRF 在智扫通项目中如何配合？","expected_sources":["agentproject.md","agentprojectREADME.md"]},
+  {"id":"agent-03","category":"智扫通项目","question":"BudgetManager 如何限制 Agent 的成本和执行步骤？","expected_sources":["agentproject.md","agentprojectREADME.md"]},
+  {"id":"agent-04","category":"智扫通项目","question":"智扫通项目的离线检索评测结果如何？","expected_sources":["agentproject.md","agentprojectREADME.md"]},
+  {"id":"farino-01","category":"法奥项目","question":"法奥机器人智能客服平台是什么性质的项目？","expected_sources":["farino.md","farinoREADME.md"]},
+  {"id":"farino-02","category":"法奥项目","question":"法奥项目的 Direct 和 Agentic 两级路由如何工作？","expected_sources":["farino.md","farinoREADME.md"]},
+  {"id":"farino-03","category":"法奥项目","question":"法奥客服平台如何处理 QA 数据沉淀和工单？","expected_sources":["farino.md","farinoREADME.md"]},
+  {"id":"myagent-01","category":"本站项目","question":"个人招聘知识 Agent 使用了哪些后端和 RAG 技术？","expected_sources":["myagent.md","myagentREADME.md"]},
+  {"id":"myagent-02","category":"本站项目","question":"本站如何实现引用来源和 SSE 流式回答？","expected_sources":["myagent.md","myagentREADME.md"]},
+  {"id":"mood-01","category":"情绪分析项目","question":"情绪分析日记项目使用了哪些传统机器学习方法？","expected_sources":["mood_tracker.md","mood_trackerREADME.md"]},
+  {"id":"mood-02","category":"情绪分析项目","question":"情绪分类模型如何接入 Django 页面？","expected_sources":["mood_tracker.md","mood_trackerREADME.md"]},
+  {"id":"boundary-01","category":"知识边界","question":"朱旭是否有正式 AI 岗位实习和大规模线上经验？","expected_sources":["08_risk_and_consistency.md","00_master_profile.md","06_hr_interview_qa.md"]},
+  {"id":"boundary-02","category":"知识边界","question":"朱旭的 GPA、排名和英语成绩是多少？","expected_sources":["09_missing_information_checklist.md","08_risk_and_consistency.md","01_public_profile.md","00_master_profile.md"]}
+]

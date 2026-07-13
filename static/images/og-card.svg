@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#020617"/>
+  <circle cx="1040" cy="80" r="260" fill="#0ea5e9" opacity=".12"/>
+  <text x="100" y="220" font-family="system-ui,sans-serif" font-size="82" font-weight="800" fill="#f8fafc">朱旭</text>
+  <text x="100" y="310" font-family="system-ui,sans-serif" font-size="42" font-weight="600" fill="#38bdf8">Agent 应用开发 · RAG · Python 后端</text>
+  <text x="100" y="390" font-family="system-ui,sans-serif" font-size="28" fill="#94a3b8">南昌大学软件工程 · 2027 届本科</text>
+  <text x="100" y="470" font-family="system-ui,sans-serif" font-size="24" fill="#64748b">项目、在线简历、RAG 问答与可验证评测</text>
+</svg>

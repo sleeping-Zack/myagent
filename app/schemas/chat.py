@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import Literal, Optional
+from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -6,7 +7,7 @@ class ChatRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     question: str = Field(..., max_length=500)
-    conversation_id: Optional[str] = None
+    conversation_id: Optional[UUID] = None
     stream: bool = True
 
 
@@ -28,6 +29,9 @@ class ChatMeta(BaseModel):
 class FeedbackRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    rating: int  # -1 or 1
-    reason: Optional[str] = None
-    comment: Optional[str] = None
+    conversation_id: UUID
+    rating: Literal[-1, 1]
+    reason: Optional[Literal[
+        "信息错误", "与问题无关", "引用不支持结论", "内容过长", "信息已过期"
+    ]] = None
+    comment: Optional[str] = Field(default=None, max_length=500)

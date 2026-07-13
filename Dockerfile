@@ -9,11 +9,17 @@ RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r re
 
 COPY . .
 
-RUN mkdir -p /app/static /app/uploads /app/knowledge /app/models
+RUN mkdir -p /app/static /app/uploads /app/knowledge /app/models \
+    && chmod +x /app/deploy/entrypoint.sh \
+    && addgroup --system --gid 10001 app \
+    && adduser --system --uid 10001 --ingroup app app \
+    && chown -R app:app /app
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+USER 10001:10001
+
+ENTRYPOINT ["/app/deploy/entrypoint.sh"]

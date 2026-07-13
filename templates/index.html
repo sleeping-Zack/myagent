@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% set active_page = 'home' %}
+{% from "components/project_card.html" import project_card %}
 
 {% block title %}朱旭 | AI 应用开发工程师{% endblock %}
 
@@ -29,6 +30,13 @@
         AI 应用开发 / RAG / Agent / Python 后端
       </p>
 
+      <div class="flex flex-wrap gap-2 mb-6 text-xs">
+        <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">南昌大学</span>
+        <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">软件工程</span>
+        <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">2027 届本科</span>
+        <span class="px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">求 Agent 应用开发实习</span>
+      </div>
+
       <!-- 一句话介绍 -->
       <p class="text-slate-400 text-lg leading-relaxed mb-10 max-w-xl">
         专注于 LLM 应用落地，具备从知识库构建、检索增强到 Agent 编排的完整实践经验。
@@ -45,13 +53,17 @@
            class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
           与 AI 对话
         </a>
-        <a href="/static/resume/zhuxu-resume.pdf" download
+        <a href="/static/resume/zhuxu-resume-202607.pdf" download
            class="px-6 py-3 text-slate-400 hover:text-white font-medium rounded-lg border border-slate-700 hover:border-slate-500 transition-colors flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
           下载简历
+        </a>
+        <a href="https://github.com/sleeping-Zack" target="_blank" rel="noopener noreferrer"
+           class="px-6 py-3 text-slate-400 hover:text-white font-medium rounded-lg border border-slate-700 hover:border-slate-500 transition-colors">
+          查看 GitHub
         </a>
       </div>
     </div>
@@ -73,6 +85,7 @@
     </a>
   </div>
 
+  {% if false %}
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
 
     <!-- 项目卡片 1 -->
@@ -186,6 +199,13 @@
     </article>
 
   </div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    {% for project in projects %}
+      {{ project_card(project) }}
+    {% endfor %}
+  </div>
 </section>
 
 <!-- ==================== 核心能力 ==================== -->
@@ -242,7 +262,7 @@
           </svg>
         </div>
         <h3 class="font-semibold text-white text-sm mb-1">数据库与检索</h3>
-        <p class="text-xs text-slate-500 leading-relaxed">PostgreSQL、Qdrant、Elasticsearch</p>
+        <p class="text-xs text-slate-500 leading-relaxed">PostgreSQL、pgvector、Chroma</p>
       </div>
 
       <!-- 能力卡片 5 -->
@@ -268,23 +288,23 @@
     <p class="text-slate-500 mt-2 text-sm">点击问题，与 AI 直接对话</p>
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-3xl mx-auto">
-    <button onclick="askQuestion('朱旭做过哪些 RAG 项目？效果如何？')"
+    <button data-question="朱旭做过哪些 RAG 项目？效果如何？"
             class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
       朱旭做过哪些 RAG 项目？效果如何？
     </button>
-    <button onclick="askQuestion('他的 Python 和后端技术栈是什么？')"
+    <button data-question="他的 Python 和后端技术栈是什么？"
             class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
       他的 Python 和后端技术栈是什么？
     </button>
-    <button onclick="askQuestion('他在团队协作中担任什么角色？')"
+    <button data-question="他在团队协作中担任什么角色？"
             class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
       他在团队协作中担任什么角色？
     </button>
-    <button onclick="askQuestion('他有哪些实习经历？')"
+    <button data-question="他有哪些实习经历？"
             class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
       他有哪些实习经历？
     </button>
-    <button onclick="askQuestion('他为什么想做 AI 应用方向？')"
+    <button data-question="他为什么想做 AI 应用方向？"
             class="text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-sky-500/50 hover:text-white hover:bg-slate-800 transition-all">
       他为什么想做 AI 应用方向？
     </button>
@@ -294,9 +314,11 @@
 {% endblock %}
 
 {% block scripts_extra %}
-<script>
-  function askQuestion(q) {
-    window.location.href = '/agent?q=' + encodeURIComponent(q);
-  }
+<script nonce="{{ request.state.csp_nonce }}">
+  document.querySelectorAll('[data-question]').forEach(button => {
+    button.addEventListener('click', () => {
+      window.location.href = '/agent?q=' + encodeURIComponent(button.dataset.question);
+    });
+  });
 </script>
 {% endblock %}

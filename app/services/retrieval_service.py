@@ -1,15 +1,27 @@
-import asyncio
+from pathlib import Path
+import re
 from typing import Any
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.document import Document
 from app.repositories.chunk_repository import ChunkRepository
 from app.services.embedding_service import EmbeddingService
 
-# 关键词 → tag 强制匹配权重
-_TAG_KEYWORDS: list[str] = [
-    "RAG", "Agent", "DeepSeek", "Python", "FastAPI",
-    "Java", "Spring Boot", "OpenHarmony", "UNISOC",
-    "嵌入式", "网络安全", "血压计", "法奥机器人",
-]
+_PROJECT_ALIASES = {
+    "智扫通": ("智扫通", "扫地机器人", "agentproject"),
+    "法奥机器人": ("法奥", "法奥机器人", "farino", "aiflowy"),
+    "个人招聘知识agent": ("个人agent", "招聘知识agent", "myagent", "本站"),
+    "情绪分析日记": ("情绪分析", "心情助手", "moodtracker", "mood tracker"),
+}
+
+
+def _normalize(text: str) -> str:
+    return re.sub(r"[^0-9a-z\u4e00-\u9fff]+", "", text.lower())
+
+
+def _cjk_bigrams(text: str) -> set[str]:
+    chinese = "".join(re.findall(r"[\u4e00-\u9fff]", text))
+    return {chinese[i:i + 2] for i in range(max(0, len(chinese) - 1))}
 
 
 class RetrievalService:
@@ -24,7 +36,7 @@ class RetrievalService:
         top_k: int = 10,
         min_score: float = 0.45,
     ) -> list[dict]:
-        embedding = await asyncio.to_thread(self._embedding_svc.embed_query, question)
+        embedding = await self._embedding_svc.async_embed_query(question)
 
         raw_chunks = await self._chunk_repo.search_similar(
             session=session,
@@ -34,10 +46,21 @@ class RetrievalService:
             confidence_levels=["confirmed", "self_reported"],
         )
 
+        source_names = {}
+        document_ids = {chunk.document_id for chunk in raw_chunks if chunk.document_id}
+        if document_ids:
+            result = await session.execute(
+                select(Document.id, Document.source_id).where(Document.id.in_(document_ids))
+            )
+            source_names = {
+                row.id: Path(row.source_id).name
+                for row in result
+            }
+
         results: list[dict] = []
         for i, chunk in enumerate(raw_chunks):
-            # pgvector cosine distance → similarity: 1 - distance
-            # 由于 <=> 返回距离，rank 0 最近，用位置估算 vector_score
+            # 当前仓储层只返回排序后的实体，无法取得原始 cosine distance。
+            # 因此该值只是参与混合排序的名次分，不是向量相似度。
             vector_score = max(0.0, 1.0 - i / max(len(raw_chunks), 1) * 0.6)
             final_score = self._score(vector_score, chunk, question)
             if final_score >= min_score:
@@ -49,6 +72,7 @@ class RetrievalService:
                     "score": round(final_score, 4),
                     "tags": chunk.tags or [],
                     "project_id": str(chunk.project_id) if chunk.project_id else None,
+                    "source_name": source_names.get(chunk.document_id),
                 })
 
         results.sort(key=lambda x: x["score"], reverse=True)
@@ -57,13 +81,22 @@ class RetrievalService:
     def _score(self, vector_score: float, chunk: Any, question: str) -> float:
         q_lower = question.lower()
         title_lower = (chunk.title or "").lower()
+        q_normalized = _normalize(question)
+        title_normalized = _normalize(title_lower)
 
-        title_match = 1.0 if any(w in title_lower for w in q_lower.split()) else 0.0
+        alias_match = any(
+            any(_normalize(alias) in q_normalized for alias in aliases)
+            and _normalize(canonical) in title_normalized
+            for canonical, aliases in _PROJECT_ALIASES.items()
+        )
+        ngram_overlap = _cjk_bigrams(question).intersection(_cjk_bigrams(title_lower))
+        title_match = 1.0 if alias_match or len(ngram_overlap) >= 2 else 0.0
 
         tags: list[str] = chunk.tags or []
         tag_match = 0.0
-        for kw in _TAG_KEYWORDS:
-            if kw.lower() in q_lower and any(kw.lower() in t.lower() for t in tags):
+        for tag in tags:
+            normalized_tag = _normalize(tag)
+            if normalized_tag and normalized_tag in q_normalized:
                 tag_match = 1.0
                 break
 

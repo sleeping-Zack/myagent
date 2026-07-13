@@ -10,11 +10,12 @@ class CitationService:
             citations.append(
                 CitationOut(
                     id=chunk["chunk_id"],
-                    title=chunk["title"],
+                    title=chunk.get("source_name") or chunk["title"],
                     section=chunk.get("section"),
                     content_preview=preview,
                     project_slug=chunk.get("project_id"),
                     tags=chunk.get("tags") or [],
+                    ranking_score=chunk["score"],
                 )
             )
         return citations

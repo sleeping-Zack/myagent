@@ -29,6 +29,17 @@ def _load_prompt(filename: str) -> str:
     return (_PROMPTS_DIR / filename).read_text(encoding="utf-8").strip()
 
 
+def follow_up_suggestions(question: str) -> list[str]:
+    q = question.lower()
+    if "法奥" in q or "farino" in q or "aiflowy" in q:
+        return ["这个项目中朱旭具体负责哪些模块？", "Direct 和 Agentic 路由如何实现？"]
+    if "智扫" in q or "扫地机器人" in q or "budget" in q:
+        return ["混合检索的离线评测结果如何？", "BudgetManager 如何控制 Agent？"]
+    if "实习" in q or "长冈" in q or "血压计" in q:
+        return ["这段嵌入式经历对 Agent 开发有什么帮助？", "实习中解决过哪些稳定性问题？"]
+    return ["朱旭最有代表性的项目是什么？", "他的能力边界和当前不足是什么？"]
+
+
 class RagService:
     def __init__(
         self,
@@ -55,7 +66,7 @@ class RagService:
         # 1. 敏感词检测
         if _SENSITIVE_RE.search(question):
             yield {"event": "token", "data": {"content": "问题包含敏感内容，无法处理。"}}
-            yield {"event": "done", "data": {"message_id": ""}}
+            yield {"event": "done", "data": {"message_id": "", "suggestions": []}}
             return
 
         yield {"event": "meta", "data": {"conversation_id": conversation_id}}
@@ -84,12 +95,12 @@ class RagService:
                 answer=fallback_text,
                 citation_ids=[],
                 model_name=settings.deepseek_model,
-                input_tokens=await self._deepseek.count_tokens(question),
-                output_tokens=await self._deepseek.count_tokens(fallback_text),
+                estimated_input_tokens=self._deepseek.estimate_tokens(question),
+                estimated_output_tokens=self._deepseek.estimate_tokens(fallback_text),
                 latency_ms=int(time.time() * 1000) - start_ms,
             )
             yield {"event": "token", "data": {"content": fallback_text}}
-            yield {"event": "done", "data": {"message_id": message_id}}
+            yield {"event": "done", "data": {"message_id": message_id, "suggestions": follow_up_suggestions(question)}}
             return
 
         # 4. 格式化引用
@@ -109,12 +120,12 @@ class RagService:
             f"{m['role'].upper()}: {m['content']}" for m in context_messages
         ) or "（无历史对话）"
 
-        retrieved_chunks_text = "\n\n".join(
+        retrieved_chunks_text = "<knowledge_data>\n" + "\n\n".join(
             f"[{i+1}] {c['title']}"
             + (f"（{c['section']}）" if c.get("section") else "")
             + f"\n{c['content']}"
             for i, c in enumerate(top_chunks)
-        )
+        ) + "\n</knowledge_data>"
 
         user_message = answer_tmpl.format(
             question=question,
@@ -139,8 +150,8 @@ class RagService:
 
         # 8. 保存问答日志
         citation_ids = [c.id for c in citations]
-        input_tokens = await self._deepseek.count_tokens(user_message + system_prompt)
-        output_tokens = await self._deepseek.count_tokens(full_answer)
+        estimated_input_tokens = self._deepseek.estimate_tokens(user_message + system_prompt)
+        estimated_output_tokens = self._deepseek.estimate_tokens(full_answer)
 
         message_id = await self._conv.save_exchange(
             conversation_id=conversation_id,
@@ -148,9 +159,9 @@ class RagService:
             answer=full_answer,
             citation_ids=citation_ids,
             model_name=settings.deepseek_model,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
+            estimated_input_tokens=estimated_input_tokens,
+            estimated_output_tokens=estimated_output_tokens,
             latency_ms=latency_ms,
         )
 
-        yield {"event": "done", "data": {"message_id": message_id}}
+        yield {"event": "done", "data": {"message_id": message_id, "suggestions": follow_up_suggestions(question)}}

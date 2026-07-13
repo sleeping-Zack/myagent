@@ -1,0 +1,406 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-13T05:38:11.555067+00:00",
+  "dataset": "rag_golden_set.json",
+  "sample_size": 18,
+  "metrics": {
+    "recall_at_5": 1.0,
+    "average_retrieval_latency_ms": 118.1,
+    "p95_retrieval_latency_ms": 258.8
+  },
+  "cases": [
+    {
+      "id": "profile-01",
+      "category": "基本信息",
+      "question": "朱旭的学校、专业和毕业届别是什么？",
+      "expected_sources": [
+        "00_master_profile.md",
+        "01_public_profile.md"
+      ],
+      "retrieved_sources": [
+        "01_public_profile.md",
+        "00_master_profile.md",
+        "README.md",
+        "06_hr_interview_qa.md",
+        "05_experience_timeline.md"
+      ],
+      "matched_sources": [
+        "00_master_profile.md",
+        "01_public_profile.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 258.8
+    },
+    {
+      "id": "profile-02",
+      "category": "基本信息",
+      "question": "朱旭当前希望寻找什么方向的实习？",
+      "expected_sources": [
+        "00_master_profile.md",
+        "01_public_profile.md"
+      ],
+      "retrieved_sources": [
+        "00_master_profile.md",
+        "06_hr_interview_qa.md",
+        "06_hr_interview_qa.md",
+        "README.md",
+        "01_public_profile.md"
+      ],
+      "matched_sources": [
+        "00_master_profile.md",
+        "01_public_profile.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 117.3
+    },
+    {
+      "id": "profile-03",
+      "category": "基本信息",
+      "question": "如何联系朱旭并查看他的 GitHub？",
+      "expected_sources": [
+        "01_public_profile.md"
+      ],
+      "retrieved_sources": [
+        "01_public_profile.md",
+        "05_experience_timeline.md",
+        "myagent.md",
+        "myagent.md",
+        "00_master_profile.md"
+      ],
+      "matched_sources": [
+        "01_public_profile.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 112.3
+    },
+    {
+      "id": "intern-01",
+      "category": "实习经历",
+      "question": "朱旭在长冈医疗科技有限公司做了什么？",
+      "expected_sources": [
+        "changgang_embedded_internship.md",
+        "00_master_profile.md",
+        "06_hr_interview_qa.md"
+      ],
+      "retrieved_sources": [
+        "README.md",
+        "06_hr_interview_qa.md",
+        "06_hr_interview_qa.md",
+        "00_master_profile.md",
+        "06_hr_interview_qa.md"
+      ],
+      "matched_sources": [
+        "00_master_profile.md",
+        "06_hr_interview_qa.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 121.8
+    },
+    {
+      "id": "intern-02",
+      "category": "实习经历",
+      "question": "血压计程控电路项目涉及哪些控制和调试工作？",
+      "expected_sources": [
+        "changgang_embedded_internship.md"
+      ],
+      "retrieved_sources": [
+        "changgang_embedded_internship.md",
+        "00_master_profile.md",
+        "README.md",
+        "06_hr_interview_qa.md",
+        "mood_trackerREADME.md"
+      ],
+      "matched_sources": [
+        "changgang_embedded_internship.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 106.3
+    },
+    {
+      "id": "agent-01",
+      "category": "智扫通项目",
+      "question": "智扫通机器人客服 Agent 的整体架构是什么？",
+      "expected_sources": [
+        "agentproject.md",
+        "agentprojectREADME.md"
+      ],
+      "retrieved_sources": [
+        "agentprojectREADME.md",
+        "agentproject.md",
+        "agentprojectREADME.md",
+        "agentprojectREADME.md",
+        "agentproject.md"
+      ],
+      "matched_sources": [
+        "agentproject.md",
+        "agentprojectREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 103.3
+    },
+    {
+      "id": "agent-02",
+      "category": "智扫通项目",
+      "question": "Dense、BM25 和 RRF 在智扫通项目中如何配合？",
+      "expected_sources": [
+        "agentproject.md",
+        "agentprojectREADME.md"
+      ],
+      "retrieved_sources": [
+        "agentprojectREADME.md",
+        "07_technical_interview_qa.md",
+        "agentproject.md",
+        "agentprojectREADME.md",
+        "agentprojectREADME.md"
+      ],
+      "matched_sources": [
+        "agentproject.md",
+        "agentprojectREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 114.6
+    },
+    {
+      "id": "agent-03",
+      "category": "智扫通项目",
+      "question": "BudgetManager 如何限制 Agent 的成本和执行步骤？",
+      "expected_sources": [
+        "agentproject.md",
+        "agentprojectREADME.md"
+      ],
+      "retrieved_sources": [
+        "07_technical_interview_qa.md",
+        "agentproject.md",
+        "agentprojectREADME.md",
+        "agentprojectREADME.md",
+        "agentprojectREADME.md"
+      ],
+      "matched_sources": [
+        "agentproject.md",
+        "agentprojectREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 100.7
+    },
+    {
+      "id": "agent-04",
+      "category": "智扫通项目",
+      "question": "智扫通项目的离线检索评测结果如何？",
+      "expected_sources": [
+        "agentproject.md",
+        "agentprojectREADME.md"
+      ],
+      "retrieved_sources": [
+        "agentproject.md",
+        "agentproject.md",
+        "agentproject.md",
+        "agentprojectREADME.md",
+        "07_technical_interview_qa.md"
+      ],
+      "matched_sources": [
+        "agentproject.md",
+        "agentprojectREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 110.6
+    },
+    {
+      "id": "farino-01",
+      "category": "法奥项目",
+      "question": "法奥机器人智能客服平台是什么性质的项目？",
+      "expected_sources": [
+        "farino.md",
+        "farinoREADME.md"
+      ],
+      "retrieved_sources": [
+        "farinoREADME.md",
+        "farino.md",
+        "farinoREADME.md",
+        "farino.md",
+        "farino.md"
+      ],
+      "matched_sources": [
+        "farino.md",
+        "farinoREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 115.7
+    },
+    {
+      "id": "farino-02",
+      "category": "法奥项目",
+      "question": "法奥项目的 Direct 和 Agentic 两级路由如何工作？",
+      "expected_sources": [
+        "farino.md",
+        "farinoREADME.md"
+      ],
+      "retrieved_sources": [
+        "07_technical_interview_qa.md",
+        "farinoREADME.md",
+        "farino.md",
+        "07_technical_interview_qa.md",
+        "farinoREADME.md"
+      ],
+      "matched_sources": [
+        "farino.md",
+        "farinoREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 104.4
+    },
+    {
+      "id": "farino-03",
+      "category": "法奥项目",
+      "question": "法奥客服平台如何处理 QA 数据沉淀和工单？",
+      "expected_sources": [
+        "farino.md",
+        "farinoREADME.md"
+      ],
+      "retrieved_sources": [
+        "farino.md",
+        "farinoREADME.md",
+        "farino.md",
+        "farino.md",
+        "farinoREADME.md"
+      ],
+      "matched_sources": [
+        "farino.md",
+        "farinoREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 109.0
+    },
+    {
+      "id": "myagent-01",
+      "category": "本站项目",
+      "question": "个人招聘知识 Agent 使用了哪些后端和 RAG 技术？",
+      "expected_sources": [
+        "myagent.md",
+        "myagentREADME.md"
+      ],
+      "retrieved_sources": [
+        "myagent.md",
+        "myagent.md",
+        "myagent.md",
+        "agentprojectREADME.md",
+        "05_experience_timeline.md"
+      ],
+      "matched_sources": [
+        "myagent.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 117.3
+    },
+    {
+      "id": "myagent-02",
+      "category": "本站项目",
+      "question": "本站如何实现引用来源和 SSE 流式回答？",
+      "expected_sources": [
+        "myagent.md",
+        "myagentREADME.md"
+      ],
+      "retrieved_sources": [
+        "myagent.md",
+        "07_technical_interview_qa.md",
+        "README.md",
+        "07_technical_interview_qa.md",
+        "07_technical_interview_qa.md"
+      ],
+      "matched_sources": [
+        "myagent.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 115.9
+    },
+    {
+      "id": "mood-01",
+      "category": "情绪分析项目",
+      "question": "情绪分析日记项目使用了哪些传统机器学习方法？",
+      "expected_sources": [
+        "mood_tracker.md",
+        "mood_trackerREADME.md"
+      ],
+      "retrieved_sources": [
+        "mood_tracker.md",
+        "mood_tracker.md",
+        "mood_tracker.md",
+        "mood_trackerREADME.md",
+        "mood_tracker.md"
+      ],
+      "matched_sources": [
+        "mood_tracker.md",
+        "mood_trackerREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 103.2
+    },
+    {
+      "id": "mood-02",
+      "category": "情绪分析项目",
+      "question": "情绪分类模型如何接入 Django 页面？",
+      "expected_sources": [
+        "mood_tracker.md",
+        "mood_trackerREADME.md"
+      ],
+      "retrieved_sources": [
+        "mood_trackerREADME.md",
+        "mood_trackerREADME.md",
+        "mood_tracker.md",
+        "mood_trackerREADME.md",
+        "mood_trackerREADME.md"
+      ],
+      "matched_sources": [
+        "mood_tracker.md",
+        "mood_trackerREADME.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 104.3
+    },
+    {
+      "id": "boundary-01",
+      "category": "知识边界",
+      "question": "朱旭是否有正式 AI 岗位实习和大规模线上经验？",
+      "expected_sources": [
+        "08_risk_and_consistency.md",
+        "00_master_profile.md",
+        "06_hr_interview_qa.md"
+      ],
+      "retrieved_sources": [
+        "06_hr_interview_qa.md",
+        "06_hr_interview_qa.md",
+        "06_hr_interview_qa.md",
+        "README.md",
+        "06_hr_interview_qa.md"
+      ],
+      "matched_sources": [
+        "06_hr_interview_qa.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 102.4
+    },
+    {
+      "id": "boundary-02",
+      "category": "知识边界",
+      "question": "朱旭的 GPA、排名和英语成绩是多少？",
+      "expected_sources": [
+        "09_missing_information_checklist.md",
+        "08_risk_and_consistency.md",
+        "01_public_profile.md",
+        "00_master_profile.md"
+      ],
+      "retrieved_sources": [
+        "01_public_profile.md",
+        "00_master_profile.md",
+        "06_hr_interview_qa.md",
+        "README.md",
+        "06_hr_interview_qa.md"
+      ],
+      "matched_sources": [
+        "00_master_profile.md",
+        "01_public_profile.md"
+      ],
+      "recall_at_5": 1.0,
+      "latency_ms": 107.4
+    }
+  ]
+}

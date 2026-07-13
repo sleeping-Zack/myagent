@@ -17,78 +17,42 @@
       <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 space-y-4">
         <h2 class="text-lg font-semibold text-white">个人简介</h2>
         <p class="text-slate-300 text-sm leading-relaxed">
-          我是朱旭，一名专注于 AI 应用开发的工程师，目前就读于 [南昌大学] 软件工程专业（本科在读/应届毕业）。
-          主要方向是将大语言模型落地到实际业务中，包括 RAG 知识库、对话 Agent、向量检索等系统的设计与实现。
+          我是朱旭，南昌大学软件学院软件工程专业 2027 届本科生，求职方向是 Agent 应用开发、
+          RAG、AI 应用后端和 Python 后端。
         </p>
         <p class="text-slate-300 text-sm leading-relaxed">
-          在法奥机器人的项目经历中，我从零搭建了企业内部的智能客服知识库，完整经历了文档处理、向量化、检索优化、
-          接口开发到上线部署的全流程。这段经历让我对 LLM 应用工程的每个环节都有了真实的生产级理解，
-          而不只是停留在教程和 demo。
+          我参与过南昌大学与法奥机器人的校企合作，在 AIFlowy 平台上进行机器人智能客服和 Agent 功能二次开发；
+          也独立完成了智扫通机器人智能客服 Agent 和本站的个人招聘知识 Agent。
         </p>
         <p class="text-slate-300 text-sm leading-relaxed">
-          除了 AI 方向，我同样具备扎实的 Python 后端开发能力——熟悉 FastAPI / Django 生态，
-          能够独立完成从数据库设计到接口开发、部署上线的完整工作。我习惯用 Docker 管理环境，
-          写代码时注重可读性和可维护性。
+          我的实践重点是 RAG 检索、Tool Calling、Agent 运行控制，以及 FastAPI、PostgreSQL、pgvector、
+          SSE、Docker Compose 和 Nginx 等工程链路。目前没有正式 AI 岗位实习和大规模线上系统经验。
         </p>
         <p class="text-slate-300 text-sm leading-relaxed">
-          目前正在寻找 AI 应用开发 / Python 后端方向的全职机会。如果你正在构建与 LLM、RAG、Agent
-          相关的产品，欢迎和我聊聊——你可以直接在这个页面与 AI 对话，了解更多关于我的经历，
-          也可以通过邮件或 GitHub 联系我。
+          目前正在寻找 Agent 应用开发相关实习机会，欢迎通过邮件或 GitHub 联系我。
         </p>
       </div>
 
       <!-- 技术栈可视化 -->
       <div class="bg-slate-900 border border-slate-700 rounded-xl p-6">
         <h2 class="text-lg font-semibold text-white mb-5">技术栈</h2>
-        <div class="space-y-4">
-
-          {% set skills = [
-            { "category": "AI / LLM", "color": "sky", "items": [
-              {"name": "RAG & 向量检索", "level": 90},
-              {"name": "LangChain / LlamaIndex", "level": 80},
-              {"name": "Prompt Engineering", "level": 85},
-              {"name": "OpenAI / 兼容接口", "level": 85}
-            ]},
-            { "category": "后端开发", "color": "emerald", "items": [
-              {"name": "Python / FastAPI", "level": 88},
-              {"name": "SQLAlchemy / Alembic", "level": 75},
-              {"name": "RESTful API 设计", "level": 82},
-              {"name": "Django", "level": 65}
-            ]},
-            { "category": "数据库", "color": "violet", "items": [
-              {"name": "PostgreSQL / MySQL", "level": 78},
-              {"name": "Qdrant / Milvus（向量库）", "level": 80},
-              {"name": "Redis", "level": 65}
-            ]},
-            { "category": "工程部署", "color": "amber", "items": [
-              {"name": "Docker / Docker Compose", "level": 82},
-              {"name": "Nginx", "level": 70},
-              {"name": "Linux / Shell", "level": 75}
-            ]}
-          ] %}
-
-          {% for group in skills %}
-          <div>
-            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{{ group.category }}</p>
-            <div class="space-y-2">
-              {% for item in group['items'] %}
-              <div class="flex items-center gap-3">
-                <span class="text-slate-300 text-sm w-44 shrink-0">{{ item.name }}</span>
-                <div class="flex-1 bg-slate-800 rounded-full h-1.5">
-                  <div class="h-1.5 rounded-full
-                    {% if group.color == 'sky' %}bg-sky-500
-                    {% elif group.color == 'emerald' %}bg-emerald-500
-                    {% elif group.color == 'violet' %}bg-violet-500
-                    {% else %}bg-amber-500{% endif %}"
-                    style="width: {{ item.level }}%"></div>
-                </div>
-                <span class="text-slate-600 text-xs w-9 text-right">{{ item.level }}%</span>
-              </div>
-              {% endfor %}
-            </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div class="rounded-lg bg-slate-800/60 p-4">
+            <p class="font-semibold text-sky-400 mb-2">RAG 与 Agent</p>
+            <p class="text-slate-400 leading-relaxed">Embedding、Dense + BM25、RRF、Tool Calling、ReAct、MCP、HITL、Trace</p>
           </div>
-          {% endfor %}
-
+          <div class="rounded-lg bg-slate-800/60 p-4">
+            <p class="font-semibold text-emerald-400 mb-2">Python 后端</p>
+            <p class="text-slate-400 leading-relaxed">Python、FastAPI、Pydantic、SQLAlchemy Async、pytest、RESTful API、SSE</p>
+          </div>
+          <div class="rounded-lg bg-slate-800/60 p-4">
+            <p class="font-semibold text-violet-400 mb-2">数据与检索</p>
+            <p class="text-slate-400 leading-relaxed">PostgreSQL、pgvector、Chroma、MySQL、SQLite、Redis</p>
+          </div>
+          <div class="rounded-lg bg-slate-800/60 p-4">
+            <p class="font-semibold text-amber-400 mb-2">工程部署</p>
+            <p class="text-slate-400 leading-relaxed">Git、Docker Compose、Nginx、Linux、自动化测试</p>
+          </div>
         </div>
       </div>
 
@@ -109,15 +73,11 @@
         <div class="space-y-2 text-sm text-slate-300">
           <div class="flex gap-2">
             <span class="text-slate-500 shrink-0">方向</span>
-            <span>AI 应用开发 / Python 后端</span>
-          </div>
-          <div class="flex gap-2">
-            <span class="text-slate-500 shrink-0">地点</span>
-            <span>[不限城市 / 优先北上深杭]</span>
+            <span>Agent 应用开发 / RAG / AI 应用后端</span>
           </div>
           <div class="flex gap-2">
             <span class="text-slate-500 shrink-0">类型</span>
-            <span>全职（校招/社招均可）</span>
+            <span>实习</span>
           </div>
           <div class="flex gap-2">
             <span class="text-slate-500 shrink-0">状态</span>
@@ -131,7 +91,7 @@
         <h2 class="text-base font-semibold text-white mb-4">联系方式</h2>
         <div class="space-y-3">
           <!-- 邮件 -->
-          <a href="mailto:[your.email@example.com]"
+          <a href="mailto:zhuxu2825@gmail.com"
              class="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-colors group">
             <div class="w-8 h-8 bg-slate-800 group-hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors">
               <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,11 +101,11 @@
             </div>
             <div>
               <p class="text-xs text-slate-500">邮件</p>
-              <p>[your.email@example.com]</p>
+              <p>zhuxu2825@gmail.com</p>
             </div>
           </a>
           <!-- GitHub -->
-          <a href="#"
+          <a href="https://github.com/sleeping-Zack"
              target="_blank" rel="noopener noreferrer"
              class="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-colors group">
             <div class="w-8 h-8 bg-slate-800 group-hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors">
@@ -155,21 +115,9 @@
             </div>
             <div>
               <p class="text-xs text-slate-500">GitHub</p>
-              <p>github.com/[your-username]</p>
+              <p>github.com/sleeping-Zack</p>
             </div>
           </a>
-          <!-- 微信 -->
-          <div class="flex items-center gap-3 text-sm text-slate-400">
-            <div class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center">
-              <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.295.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.601-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.148 1.67-1.69 1.39-2.374 3.585-1.518 5.584.545 1.281 1.56 2.31 2.85 2.914 1.284.604 2.73.7 4.05.236l1.498.87a.326.326 0 00.167.054.295.295 0 00.295-.295c0-.071-.03-.141-.047-.213l-.307-1.158a.59.59 0 01.213-.665 6.318 6.318 0 002.372-4.925c0-3.133-2.524-4.072-4.425-4.072zm-2.32 2.118a.99.99 0 010 1.98.99.99 0 010-1.98zm4.594 0a.99.99 0 010 1.98.99.99 0 010-1.98z"/>
-              </svg>
-            </div>
-            <div>
-              <p class="text-xs text-slate-500">微信</p>
-              <p>[微信号占位]</p>
-            </div>
-          </div>
         </div>
       </div>
 
