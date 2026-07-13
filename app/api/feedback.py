@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.repositories.conversation_repository import ConversationRepository
@@ -6,6 +6,7 @@ from app.schemas.chat import FeedbackRequest
 from app.core.config import get_settings
 from app.core.rate_limit import feedback_rate_limiter
 from app.core.security import hash_ip
+from app.services.visitor_session_service import visitor_session_service
 import uuid
 
 router = APIRouter(prefix="/api/v1/messages")
@@ -16,6 +17,7 @@ async def submit_feedback(
     message_id: str,
     body: FeedbackRequest,
     request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db),
 ):
     settings = get_settings()
@@ -37,8 +39,10 @@ async def submit_feedback(
     except ValueError:
         raise HTTPException(status_code=400, detail="无效的 message_id")
     repo = ConversationRepository()
+    visitor = await visitor_session_service.resolve(request, db)
+    visitor_session_service.set_cookie(response, visitor)
     if not await repo.message_belongs_to_conversation(
-        db, mid, body.conversation_id
+        db, mid, body.conversation_id, visitor.id
     ):
         raise HTTPException(status_code=404, detail="消息不属于当前会话")
 
