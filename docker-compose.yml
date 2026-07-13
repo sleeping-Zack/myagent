@@ -6,14 +6,19 @@ services:
       - .env
     volumes:
       - ./knowledge:/app/knowledge:ro
-      - ./static:/app/static
       - ./uploads:/app/uploads
       - ./models:/app/models:ro
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -41,7 +46,14 @@ services:
       - ./deploy/certs:/etc/nginx/certs:ro
       - ./static:/app/static:ro
     depends_on:
-      - web
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "--no-check-certificate", "https://127.0.0.1/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   postgres_data:

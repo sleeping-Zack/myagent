@@ -18,8 +18,23 @@ docker compose up -d
 
 ```bash
 # 容器运行后执行一次性导入
-docker compose exec web python scripts/import_knowledge.py
+docker compose exec web python scripts/ingest_knowledge.py
 ```
+
+## RAG 检索评测
+
+冻结题集位于 `tests/rag_golden_set.json`。服务和数据库启动后运行：
+
+```bash
+docker compose exec web python scripts/evaluate_rag.py
+```
+
+结果会写入 `static/evaluation/latest.json`，并展示在 `/evaluation` 页面。Recall@5 的口径是每个问题的 Top 5 结果至少命中一个预先标注的可接受来源。
+
+## 健康检查
+
+- `/health/live`：进程存活检查。
+- `/health/ready`：数据库、Embedding 配置和模型配置就绪检查；仅返回总体状态。
 
 ## 目录结构
 
@@ -38,7 +53,7 @@ personal-agent/
 
 ## 技术栈
 
-- **后端**：Python 3.12、FastAPI、SQLAlchemy 2（async）、Alembic
+- **后端**：Python 3.11、FastAPI、SQLAlchemy 2（async）、Alembic
 - **LLM**：DeepSeek API（deepseek-v4-flash）
 - **向量检索**：pgvector、BGE-small-zh-v1.5 本地 embedding
 - **数据库**：PostgreSQL 16

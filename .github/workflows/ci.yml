@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: personal_agent
+          POSTGRES_USER: personal_agent
+          POSTGRES_PASSWORD: test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U personal_agent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql+asyncpg://personal_agent:test-password@localhost:5432/personal_agent
+      DEEPSEEK_API_KEY: test-key
+      EMBEDDING_API_KEY: test-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: pip install -r requirements.txt pytest pytest-asyncio ruff mypy types-bleach
+      - run: npm ci
+      - run: npm run build
+      - run: ruff check app scripts tests --select E9,F63,F7,F82
+      - run: mypy app --explicit-package-bases --ignore-missing-imports --allow-untyped-defs --allow-untyped-calls --disable-error-code=assignment --disable-error-code=arg-type --disable-error-code=call-arg --disable-error-code=return-value --disable-error-code=union-attr
+      - run: alembic upgrade head
+      - run: python scripts/ingest_knowledge.py --dry-run
+      - run: pytest -q
+      - name: Scan tracked content for obvious secrets
+        run: |
+          if grep -RInE --include='*.py' --include='*.html' --include='*.md' '(sk-[A-Za-z0-9]{20,}|BEGIN [A-Z ]+ PRIVATE KEY)' app knowledge scripts templates; then
+            exit 1
+          fi
+      - run: docker build -t personal-agent:test .
