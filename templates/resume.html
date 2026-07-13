@@ -3,276 +3,244 @@
 
 {% block title %}在线简历 | 朱旭{% endblock %}
 
-{% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+{% block head_extra %}
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .resume-section {
+    animation: fadeInUp .45s ease-out both;
+  }
+  .resume-section:nth-child(2) { animation-delay: .06s; }
+  .resume-section:nth-child(3) { animation-delay: .12s; }
+  .resume-section:nth-child(4) { animation-delay: .18s; }
+  .resume-card {
+    background: rgba(15, 23, 42, .72);
+    border: 1px solid rgba(51, 65, 85, .9);
+  }
+</style>
+{% endblock %}
 
-  <!-- 顶部操作栏 -->
-  <div class="flex items-center justify-between mb-8">
-    <h1 class="text-2xl font-bold text-white">在线简历</h1>
-    <a href="/static/resume/zhuxu-resume.pdf"
-       download
-       class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium transition-colors">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-      </svg>
-      下载 PDF 版本
-    </a>
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white">在线简历</h1>
+      <p class="text-slate-500 text-sm mt-1">与 PDF 简历内容保持一致，更新于 2026.07</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <a href="/static/resume/zhuxu-resume-202607.pdf"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-700 hover:border-sky-500 text-slate-300 hover:text-sky-400 text-sm font-medium transition-colors">
+        预览 PDF
+      </a>
+      <a href="/static/resume/zhuxu-resume-202607.pdf"
+         download
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium transition-colors shadow-lg shadow-sky-600/20">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        下载 PDF
+      </a>
+    </div>
   </div>
 
-  <!-- 简历正文 -->
-  <div class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xl">
-
-    <!-- 个人信息头部 -->
-    <div class="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700 px-8 py-8">
-      <h2 class="text-3xl font-bold text-white mb-1">朱 旭</h2>
-      <p class="text-sky-400 text-base font-medium mb-4">AI 应用开发 / Python 后端 / RAG &amp; Agent</p>
-      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
-        <span class="flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-          </svg>
-          [your.email@example.com]
-        </span>
-        <span class="flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-          </svg>
-          github.com/[your-username]
-        </span>
-        <span class="flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          [江西·南昌]
-        </span>
+  <section class="resume-section resume-card rounded-xl overflow-hidden mb-8">
+    <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950 px-6 sm:px-8 py-8 border-b border-slate-800">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+        <div>
+          <p class="text-sky-400 text-sm font-semibold mb-2">HR 快速摘要：Agent 应用开发实习生</p>
+          <h2 class="text-4xl font-extrabold text-white tracking-tight">朱旭</h2>
+          <p class="text-slate-300 mt-4 max-w-2xl leading-relaxed">
+            2027 届软件工程本科，求 Agent / RAG / AI 应用开发实习。具备企业智能客服平台二次开发经验，
+            可独立完成 FastAPI 后端、RAG 检索、Tool Calling、SSE 流式输出、自动化测试和 Docker 部署。
+          </p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2 text-sm text-slate-400 lg:text-right">
+          <a href="tel:13895932825" class="hover:text-white transition-colors">电话：13895932825</a>
+          <a href="mailto:zhuxu2825@gmail.com" class="hover:text-white transition-colors">邮箱：zhuxu2825@gmail.com</a>
+          <a href="http://47.116.25.89" target="_blank" rel="noopener noreferrer" class="hover:text-sky-400 transition-colors">在线演示：http://47.116.25.89</a>
+          <a href="https://github.com/sleeping-Zack" target="_blank" rel="noopener noreferrer" class="hover:text-sky-400 transition-colors">GitHub：sleeping-Zack</a>
+        </div>
       </div>
     </div>
 
-    <!-- 简历内容 -->
-    <div class="px-8 py-8 space-y-10">
-
-      <!-- 教育背景 -->
-      <section>
-        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
-          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
-          教育背景
-        </h3>
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-white font-medium">[南昌大学]</p>
-            <p class="text-slate-400 text-sm mt-0.5">[软件工程] · 本科</p>
-            <p class="text-slate-500 text-sm mt-1">GPA：[X.XX] / 4.5 &nbsp;·&nbsp; 主修：[数据结构、算法、操作系统、数据库]</p>
-          </div>
-          <span class="text-slate-500 text-sm shrink-0 ml-4">[2021.09] – [2025.06]</span>
+    <div class="px-6 sm:px-8 py-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-lg bg-slate-900/70 border border-slate-800 p-4">
+          <p class="text-xs text-slate-500 uppercase tracking-wider">MATCH</p>
+          <p class="text-white font-semibold mt-2">2027 届本科在读</p>
+          <p class="text-slate-400 text-sm mt-1">南昌大学软件工程，方向匹配 AI 应用与后端开发</p>
+          <p class="text-slate-500 text-xs mt-2">求职意向：Agent 应用开发实习生</p>
         </div>
-      </section>
-
-      <!-- 技术栈 -->
-      <section>
-        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
-          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
-          技术栈
-        </h3>
-        <div class="space-y-3">
-
-          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
-            <span class="text-slate-400 font-medium shrink-0">编程语言</span>
-            <div class="flex flex-wrap gap-2">
-              {% for tag in ['Python', 'Java', 'TypeScript', 'SQL', 'Bash'] %}
-              <span class="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md text-xs">{{ tag }}</span>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
-            <span class="text-slate-400 font-medium shrink-0">AI / LLM</span>
-            <div class="flex flex-wrap gap-2">
-              {% for tag in ['LangChain', 'LlamaIndex', 'RAG', 'OpenAI API', 'Embedding', 'Prompt Engineering'] %}
-              <span class="px-2.5 py-1 bg-sky-900/40 border border-sky-700/40 text-sky-300 rounded-md text-xs">{{ tag }}</span>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
-            <span class="text-slate-400 font-medium shrink-0">后端框架</span>
-            <div class="flex flex-wrap gap-2">
-              {% for tag in ['FastAPI', 'Django', 'Flask', 'SQLAlchemy', 'Alembic'] %}
-              <span class="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md text-xs">{{ tag }}</span>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
-            <span class="text-slate-400 font-medium shrink-0">数据库</span>
-            <div class="flex flex-wrap gap-2">
-              {% for tag in ['PostgreSQL', 'MySQL', 'Qdrant', 'Redis', 'Milvus'] %}
-              <span class="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md text-xs">{{ tag }}</span>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div class="grid grid-cols-[7rem_1fr] gap-2 items-baseline text-sm">
-            <span class="text-slate-400 font-medium shrink-0">工程部署</span>
-            <div class="flex flex-wrap gap-2">
-              {% for tag in ['Docker', 'Docker Compose', 'Nginx', 'Linux', 'GitHub Actions'] %}
-              <span class="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md text-xs">{{ tag }}</span>
-              {% endfor %}
-            </div>
-          </div>
-
+        <div class="rounded-lg bg-slate-900/70 border border-slate-800 p-4">
+          <p class="text-xs text-slate-500 uppercase tracking-wider">ABILITY</p>
+          <p class="text-white font-semibold mt-2">RAG / Agent / FastAPI</p>
+          <p class="text-slate-400 text-sm mt-1">能做检索增强、工具调用、预算控制、SSE 接口和测试回归</p>
         </div>
-      </section>
+        <div class="rounded-lg bg-slate-900/70 border border-slate-800 p-4">
+          <p class="text-xs text-slate-500 uppercase tracking-wider">PROOF</p>
+          <p class="text-white font-semibold mt-2">在线演示 / GitHub / PDF</p>
+          <p class="text-slate-400 text-sm mt-1">有可访问作品、源码项目和完整 PDF 简历，便于快速核验</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      <!-- 项目经历 -->
-      <section>
-        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
-          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2 space-y-8">
+
+      <section class="resume-section">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <span class="w-1 h-5 rounded-full bg-sky-500"></span>
           项目经历
         </h3>
-        <div class="space-y-7">
 
-          <!-- 项目1 -->
-          <div>
-            <div class="flex justify-between items-start mb-1">
+        <div class="space-y-5">
+          <article class="resume-card rounded-xl p-5">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
               <div>
-                <p class="text-white font-semibold">法奥机器人智能客服 RAG 知识库</p>
-                <p class="text-slate-400 text-sm">[独立开发 / 内部落地] · AI 应用开发</p>
+                <h4 class="text-white font-semibold">面向智能硬件客服场景的可治理 Agent 平台</h4>
+                <p class="text-slate-500 text-sm mt-1">独立开发 | 2025.10 - 至今</p>
+                <a href="https://github.com/sleeping-Zack/agentproject" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:text-sky-300 text-sm">github.com/sleeping-Zack/agentproject</a>
               </div>
-              <span class="text-slate-500 text-sm shrink-0 ml-4">[2024.03] – [2024.08]</span>
+              <span class="w-fit px-2.5 py-1 rounded-md bg-sky-500/10 text-sky-300 border border-sky-500/20 text-xs">RAG + Tool Calling</span>
             </div>
-            <ul class="mt-2 space-y-1 text-sm text-slate-400 list-disc list-inside">
-              <li>基于 [LangChain/LlamaIndex] 设计并实现 RAG 检索增强生成知识库系统</li>
-              <li>对接法奥机器人内部技术文档，构建向量索引，支持多轮对话</li>
-              <li>通过 Reranking + 上下文压缩优化检索准确率</li>
-              <li>使用 FastAPI 封装服务接口，接入企业微信机器人</li>
+            <p class="text-slate-400 text-sm leading-relaxed mt-4">
+              面向扫地机器人售后问答、选购咨询及使用报告场景，构建包含混合检索、运行预算控制、工具权限治理、HITL 审批、Trace 与 Artifact 持久化的智能客服 Agent 系统。
+            </p>
+            <ul class="space-y-2 text-sm text-slate-400 mt-4">
+              <li>实现 Dense 向量检索与中文 BM25 双路召回，并通过 RRF 排名融合；30 条独立检索样本中 Recall@5 由 80.56% 提升至 93.33%，MRR 由 0.8778 提升至 0.9333，nDCG@5 由 0.7683 提升至 0.9035。</li>
+              <li>对 Top 20 候选接入 BAAI/bge-reranker-v2-m3 精排并返回 Top 5；因本地 CPU 平均单查询延迟约 29.4s，将 Cross-Encoder 设计为可选能力而非默认链路。</li>
+              <li>实现基于锁保护的请求级 BudgetManager，调用前 reserve、成功后 commit、异常或取消时 release，统一约束步骤数、工具次数、Token、成本和 Deadline。</li>
+              <li>构建 Claim-Evidence 校验、引用合法性检查及选择性 LLM-as-Judge；累计 255 项自动化测试纳入 CI 门禁，覆盖工具路由、预算超限、Prompt Injection、HITL 审批和异常降级。</li>
             </ul>
-            <div class="flex flex-wrap gap-1.5 mt-2">
-              {% for t in ['Python', 'LangChain', 'Qdrant', 'FastAPI', 'OpenAI'] %}
-              <span class="text-xs text-slate-500 bg-slate-800 rounded px-2 py-0.5">{{ t }}</span>
+            <div class="flex flex-wrap gap-1.5 mt-4">
+              {% for t in ['Python', 'FastAPI', 'Pydantic', 'LangChain', 'Chroma', 'SQLite', 'pytest', 'SSE', 'MCP JSON-RPC'] %}
+              <span class="text-xs px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700">{{ t }}</span>
               {% endfor %}
             </div>
-          </div>
+          </article>
 
-          <!-- 项目2 -->
-          <div>
-            <div class="flex justify-between items-start mb-1">
+          <article class="resume-card rounded-xl p-5">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
               <div>
-                <p class="text-white font-semibold">血压测量规范化外接控制模块</p>
-                <p class="text-slate-400 text-sm">[团队项目 / 竞赛作品] · Python 后端 + 嵌入式</p>
+                <h4 class="text-white font-semibold">法奥机器人智能客服平台</h4>
+                <p class="text-slate-500 text-sm mt-1">南昌大学 × 法奥机器人校企合作 | Agent 后端开发 | 2026.01 - 2026.06</p>
               </div>
-              <span class="text-slate-500 text-sm shrink-0 ml-4">[2023.09] – [2024.01]</span>
+              <span class="w-fit px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-300 border border-violet-500/20 text-xs">企业级二次开发</span>
             </div>
-            <ul class="mt-2 space-y-1 text-sm text-slate-400 list-disc list-inside">
-              <li>设计并实现 Python 后端服务，控制外接硬件模块进行规范化血压采集</li>
-              <li>开发基于 [Flask/FastAPI] 的数据管理接口，支持历史记录查询与报告导出</li>
-              <li>[获得相关竞赛奖项]</li>
+            <p class="text-slate-400 text-sm leading-relaxed mt-4">
+              面向机器人技术咨询、资料检索与售后服务场景，基于 AIFlowy 开展二次开发，构建包含智能问答、Agent 任务规划、QA 数据沉淀和售后工单管理的客服工作台。
+            </p>
+            <ul class="space-y-2 text-sm text-slate-400 mt-4">
+              <li>设计 Direct / Agentic 两级路由，普通寒暄直接交由对话模型，复杂请求再进入知识库、Workflow、插件及 MCP 工具编排链路。</li>
+              <li>实现 Agent 动态规划模块，根据用户问题和 Bot 已绑定能力生成 3-5 步执行计划，并通过 SSE 同步计划生成、步骤执行和任务完成状态。</li>
+              <li>开发 QA 数据闭环模块，完成问答抽取、低质量过滤、消息 ID 幂等去重、人工审核及 Markdown 批量导出。</li>
+              <li>开发用户端与管理端售后工单流程，支持 5 类状态流转，并依据用户身份实现工单数据隔离。</li>
+              <li>使用 Docker Compose 编排后端、前端、MySQL 和 Redis，通过 Nginx 完成 API 反向代理、静态资源访问及 SSE 长连接配置。</li>
             </ul>
-            <div class="flex flex-wrap gap-1.5 mt-2">
-              {% for t in ['Python', 'Flask', 'SQLite', '串口通信'] %}
-              <span class="text-xs text-slate-500 bg-slate-800 rounded px-2 py-0.5">{{ t }}</span>
+            <div class="flex flex-wrap gap-1.5 mt-4">
+              {% for t in ['Java', 'Spring Boot', 'MyBatis-Flex', 'Vue 3', 'MySQL', 'Redis', 'Qwen', 'SSE', 'Docker'] %}
+              <span class="text-xs px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700">{{ t }}</span>
               {% endfor %}
             </div>
-          </div>
+          </article>
 
-          <!-- 项目3 -->
-          <div>
-            <div class="flex justify-between items-start mb-1">
+          <article class="resume-card rounded-xl p-5">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
               <div>
-                <p class="text-white font-semibold">个人招聘展示 Agent</p>
-                <p class="text-slate-400 text-sm">[个人项目 / 在线运行] · 全栈</p>
+                <h4 class="text-white font-semibold">个人招聘知识 Agent</h4>
+                <p class="text-slate-500 text-sm mt-1">个人项目 | 2026.06 - 2026.07</p>
+                <a href="https://github.com/sleeping-Zack/myagent" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:text-sky-300 text-sm">github.com/sleeping-Zack/myagent</a>
               </div>
-              <span class="text-slate-500 text-sm shrink-0 ml-4">[2025.06] – 至今</span>
+              <span class="w-fit px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-xs">本站项目</span>
             </div>
-            <ul class="mt-2 space-y-1 text-sm text-slate-400 list-disc list-inside">
-              <li>面向 HR 和面试官设计的个人展示网站，集成 AI 问答功能</li>
-              <li>基于 FastAPI + Qdrant + OpenAI 构建 RAG 问答后端，支持流式输出</li>
-              <li>前端使用 Jinja2 + HTMX + Tailwind CSS，响应式设计</li>
-              <li>Docker Compose 一键部署，Nginx 反向代理</li>
+            <p class="text-slate-400 text-sm leading-relaxed mt-4">
+              面向 HR 和技术面试官构建个人招聘知识问答网站，将教育背景、项目职责和技术能力整理为结构化知识库，通过 RAG 检索、证据判断、引用展示和流式生成回答用户问题。
+            </p>
+            <ul class="space-y-2 text-sm text-slate-400 mt-4">
+              <li>使用 FastAPI、SQLAlchemy Async 和 PostgreSQL + pgvector 搭建异步 RAG 服务，设计项目、知识分块、会话、消息和反馈等数据模型。</li>
+              <li>接入 BGE Embedding 完成向量检索，在召回结果上叠加标题、标签和项目相关性权重，并限制检索范围为公开可信数据。</li>
+              <li>实现证据充分性判断和保守拒答机制；证据充足时通过 SSE 先返回引用来源，再调用 DeepSeek 流式生成答案。</li>
+              <li>记录引用、模型、Token 和响应延迟，增加 API Key、私有 IP、PEM 等敏感内容检测。</li>
+              <li>使用 Docker Compose 编排 Web、PostgreSQL + pgvector 和 Nginx，完成知识库挂载、数据库健康检查、TLS 与 SSE 长连接配置。</li>
             </ul>
-            <div class="flex flex-wrap gap-1.5 mt-2">
-              {% for t in ['FastAPI', 'Qdrant', 'OpenAI', 'Jinja2', 'Docker', 'Tailwind CSS'] %}
-              <span class="text-xs text-slate-500 bg-slate-800 rounded px-2 py-0.5">{{ t }}</span>
+            <div class="flex flex-wrap gap-1.5 mt-4">
+              {% for t in ['Python', 'FastAPI', 'PostgreSQL', 'pgvector', 'SQLAlchemy Async', 'BGE Embedding', 'DeepSeek', 'Docker Compose'] %}
+              <span class="text-xs px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700">{{ t }}</span>
               {% endfor %}
             </div>
-          </div>
-
-          <!-- 项目4 -->
-          <div>
-            <div class="flex justify-between items-start mb-1">
-              <div>
-                <p class="text-white font-semibold">OpenHarmony / UNISOC 系统适配</p>
-                <p class="text-slate-400 text-sm">[实习项目] · 嵌入式 / 系统</p>
-              </div>
-              <span class="text-slate-500 text-sm shrink-0 ml-4">[2024.06] – [2024.09]</span>
-            </div>
-            <ul class="mt-2 space-y-1 text-sm text-slate-400 list-disc list-inside">
-              <li>参与 OpenHarmony 在 UNISOC 芯片平台的系统适配工作</li>
-              <li>[具体工作内容占位：驱动适配、HAL 层开发等]</li>
-            </ul>
-            <div class="flex flex-wrap gap-1.5 mt-2">
-              {% for t in ['C', 'OpenHarmony', 'UNISOC', 'Linux'] %}
-              <span class="text-xs text-slate-500 bg-slate-800 rounded px-2 py-0.5">{{ t }}</span>
-              {% endfor %}
-            </div>
-          </div>
-
+          </article>
         </div>
       </section>
 
-      <!-- 组织经历 -->
-      <section>
-        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
-          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
-          组织经历
+      <section class="resume-section">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <span class="w-1 h-5 rounded-full bg-amber-500"></span>
+          竞赛与荣誉
         </h3>
-        <div class="space-y-4">
-          <div class="flex justify-between items-start text-sm">
-            <div>
-              <p class="text-white font-medium">[学生组织名称]</p>
-              <p class="text-slate-400 mt-0.5">[职位，如：技术部部长] · [主要职责占位]</p>
-            </div>
-            <span class="text-slate-500 shrink-0 ml-4">[2022.09] – [2023.06]</span>
-          </div>
+        <div class="resume-card rounded-xl p-5">
+          <ul class="space-y-3 text-sm text-slate-400">
+            <li><span class="text-white font-medium">2024 年第十五届蓝桥杯全国软件和信息技术专业人才大赛大学 A 组省二等奖</span>，具备一定算法基础与编程实现能力。</li>
+            <li><span class="text-white font-medium">大学生创新创业大赛校级银奖</span>，作为组长参与项目方案设计、原型验证与展示答辩。</li>
+          </ul>
         </div>
       </section>
-
-      <!-- 获奖 / 证书 -->
-      <section>
-        <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-5 flex items-center gap-2">
-          <span class="w-1 h-5 bg-sky-500 rounded-full inline-block"></span>
-          获奖与证书
-        </h3>
-        <ul class="space-y-2 text-sm text-slate-400">
-          <li class="flex justify-between">
-            <span>[竞赛名称，如：全国大学生软件大赛] · [奖项等级，如：二等奖]</span>
-            <span class="text-slate-500">[2024.01]</span>
-          </li>
-          <li class="flex justify-between">
-            <span>[竞赛名称] · [奖项等级]</span>
-            <span class="text-slate-500">[2023.06]</span>
-          </li>
-          <li class="flex justify-between">
-            <span>[证书名称，如：CET-6 / 计算机等级证书 等]</span>
-            <span class="text-slate-500">[202X.XX]</span>
-          </li>
-        </ul>
-      </section>
-
-    </div><!-- /简历内容 -->
-
-    <!-- 底部提示 -->
-    <div class="bg-slate-800/40 border-t border-slate-700 px-8 py-4">
-      <p class="text-xs text-slate-600 text-center">
-        以上内容为网页展示版本，完整版请下载 PDF 简历。方括号内为占位符，将在实际简历中替换。
-      </p>
     </div>
 
-  </div><!-- /简历卡片 -->
+    <aside class="space-y-6">
+      <section class="resume-section resume-card rounded-xl p-5">
+        <h3 class="text-base font-bold text-white mb-4">专业技能</h3>
+        <div class="space-y-5">
+          <div>
+            <p class="text-sky-400 text-sm font-semibold">Python 后端</p>
+            <p class="text-slate-400 text-sm mt-2 leading-relaxed">熟悉 Python、FastAPI、Pydantic、SQLAlchemy Async、pytest，可完成 RESTful API、SSE 流式接口、参数校验、异常处理及自动化测试。</p>
+          </div>
+          <div>
+            <p class="text-emerald-400 text-sm font-semibold">RAG 与检索</p>
+            <p class="text-slate-400 text-sm mt-2 leading-relaxed">掌握文档加载、Chunk 切分、Embedding、向量检索及引用返回流程，具备 Dense + BM25、RRF、检索评测和 Bad Case 分析实践。</p>
+          </div>
+          <div>
+            <p class="text-violet-400 text-sm font-semibold">Agent 应用</p>
+            <p class="text-slate-400 text-sm mt-2 leading-relaxed">具备 Tool Calling、ReAct、MCP、JSON-RPC 和 Agent 状态管理实践，可实现工具路由、预算控制、敏感工具审批、Trace 和异常降级。</p>
+          </div>
+          <div>
+            <p class="text-amber-400 text-sm font-semibold">工程化能力</p>
+            <p class="text-slate-400 text-sm mt-2 leading-relaxed">熟悉 Git、Docker Compose、Nginx 和 Linux 基础操作，具备服务容器化、反向代理、SSE 长连接配置及服务器部署经验。</p>
+          </div>
+        </div>
+      </section>
 
+      <section class="resume-section resume-card rounded-xl p-5">
+        <h3 class="text-base font-bold text-white mb-4">技术关键词</h3>
+        <div class="flex flex-wrap gap-1.5">
+          {% for t in ['Python', 'FastAPI', 'Pydantic', 'SQLAlchemy Async', 'pytest', 'PostgreSQL', 'MySQL', 'SQLite', 'Redis', 'RAG', 'Embedding', 'BM25', 'RRF', 'ChromaDB', 'pgvector', 'BGE', 'Tool Calling', 'ReAct', 'MCP', 'JSON-RPC', 'Docker Compose', 'Nginx', 'Linux', 'Java', 'Spring Boot', 'Vue 3'] %}
+          <span class="text-xs px-2 py-1 rounded-md bg-slate-800 text-slate-400 border border-slate-700">{{ t }}</span>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="resume-section resume-card rounded-xl p-5">
+        <h3 class="text-base font-bold text-white mb-4">快速入口</h3>
+        <div class="space-y-2">
+          <a href="/agent"
+             class="flex items-center justify-between w-full px-4 py-3 bg-sky-600 hover:bg-sky-500 rounded-lg text-white text-sm font-medium transition-colors">
+            与 AI 对话了解更多
+            <span aria-hidden="true">→</span>
+          </a>
+          <a href="/projects"
+             class="flex items-center justify-between w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 text-sm font-medium transition-colors">
+            查看项目详情
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </section>
+    </aside>
+  </div>
 </div>
 {% endblock %}

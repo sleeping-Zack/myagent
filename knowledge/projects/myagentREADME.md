@@ -18,7 +18,7 @@ docker compose up -d
 
 ```bash
 # 容器运行后执行一次性导入
-docker compose exec web python scripts/import_knowledge.py
+docker compose exec web python scripts/ingest_knowledge.py
 ```
 
 ## 目录结构
@@ -38,7 +38,7 @@ personal-agent/
 
 ## 技术栈
 
-- **后端**：Python 3.12、FastAPI、SQLAlchemy 2（async）、Alembic
+- **后端**：Python 3.11、FastAPI、SQLAlchemy 2（async）、Alembic
 - **LLM**：DeepSeek API（deepseek-v4-flash）
 - **向量检索**：pgvector、BGE-small-zh-v1.5 本地 embedding
 - **数据库**：PostgreSQL 16

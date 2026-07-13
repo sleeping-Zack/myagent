@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy import delete
 from app.models.project import Project
 from app.core.config import settings
+from app.core.html_sanitizer import safe_url, sanitize_html
 
 
 AGENTPROJECT_HTML = dedent("""
@@ -161,7 +162,7 @@ MYAGENT_HTML = dedent("""
 
 <h2>技术栈</h2>
 <ul>
-  <li><strong>后端</strong>：Python 3.12、FastAPI、SQLAlchemy 2（async）、Alembic。</li>
+  <li><strong>后端</strong>：Python 3.11、FastAPI、SQLAlchemy 2（async）、Alembic。</li>
   <li><strong>LLM</strong>：DeepSeek API。</li>
   <li><strong>向量检索</strong>：pgvector、BGE-small-zh-v1.5 本地 embedding。</li>
   <li><strong>数据库</strong>：PostgreSQL 16。</li>
@@ -250,6 +251,7 @@ PROJECTS = [
         "sort_order": 1,
         "duration": "2025.10 — 至今",
         "is_featured": True,
+        "cover_image": "/static/images/projects/agentproject.svg",
         "content_html": AGENTPROJECT_HTML,
         "related_links": [
             {"label": "GitHub 仓库", "url": "https://github.com/sleeping-Zack/agentproject"},
@@ -269,6 +271,7 @@ PROJECTS = [
         "sort_order": 2,
         "duration": "2026.01 — 2026.06",
         "is_featured": True,
+        "cover_image": "/static/images/projects/farino.svg",
         "content_html": FARINO_HTML,
         "related_links": [
             {"label": "GitHub 仓库", "url": "https://github.com/sleeping-Zack/farino"},
@@ -280,7 +283,7 @@ PROJECTS = [
         "one_liner": "面向 HR 和技术面试官的个人知识问答网站，基于 pgvector + DeepSeek 构建 RAG 服务，支持流式对话和引用溯源。",
         "project_type": "个人项目",
         "role_summary": "AI 应用开发 / Python 后端，负责产品定位、网站架构、数据模型、RAG 流程、DeepSeek 接入、pgvector 检索、SSE、Docker Compose 和上线排障。",
-        "tech_stack": ["Python 3.12", "FastAPI", "PostgreSQL 16", "pgvector", "DeepSeek", "BGE Embedding", "SQLAlchemy Async", "Alembic", "SSE", "Docker Compose", "Nginx"],
+        "tech_stack": ["Python 3.11", "FastAPI", "PostgreSQL 16", "pgvector", "DeepSeek", "BGE Embedding", "SQLAlchemy Async", "Alembic", "SSE", "Docker Compose", "Nginx"],
         "status": "运行中",
         "visibility": "public",
         "start_date": date(2026, 7, 1),
@@ -288,6 +291,7 @@ PROJECTS = [
         "sort_order": 3,
         "duration": "2026.07 — 至今",
         "is_featured": False,
+        "cover_image": "/static/images/projects/myagent.svg",
         "content_html": MYAGENT_HTML,
         "related_links": [
             {"label": "GitHub 仓库", "url": "https://github.com/sleeping-Zack/myagent"},
@@ -307,6 +311,7 @@ PROJECTS = [
         "sort_order": 4,
         "duration": "机器学习课程项目",
         "is_featured": False,
+        "cover_image": "/static/images/projects/mood_tracker.svg",
         "content_html": MOOD_TRACKER_HTML,
         "related_links": [
             {"label": "GitHub 仓库", "url": "https://github.com/sleeping-Zack/mood_tracker"},
@@ -325,7 +330,16 @@ async def seed(clear: bool = False):
             await session.commit()
             print("已清空 projects 表")
 
-        for data in PROJECTS:
+        for project_data in PROJECTS:
+            data = {
+                **project_data,
+                "content_html": sanitize_html(project_data.get("content_html")),
+                "related_links": [
+                    {**link, "url": safe_url(link.get("url"))}
+                    for link in project_data.get("related_links", [])
+                    if safe_url(link.get("url"))
+                ],
+            }
             from sqlalchemy import select
             result = await session.execute(select(Project).where(Project.slug == data["slug"]))
             existing = result.scalar_one_or_none()
