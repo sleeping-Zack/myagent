@@ -12,7 +12,7 @@ class QuestionFeedback(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     message_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("messages.id"), unique=True
+        UUID(as_uuid=True), ForeignKey("messages.id", ondelete="CASCADE"), unique=True
     )
     rating: Mapped[Optional[int]] = mapped_column(SmallInteger)
     reason: Mapped[Optional[str]] = mapped_column(String(100))

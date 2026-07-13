@@ -1,9 +1,9 @@
-import asyncio
+from __future__ import annotations
+
 import re
 import time
-import uuid
 from pathlib import Path
-from typing import AsyncIterator, Optional, TYPE_CHECKING
+from typing import AsyncIterator, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 from app.services.retrieval_service import RetrievalService
 from app.services.deepseek_service import DeepSeekService
 from app.services.citation_service import CitationService
-from app.services.conversation_service import ConversationService
 from app.schemas.citation import CitationOut
 from app.core.config import settings
 
@@ -46,23 +45,19 @@ class RagService:
         retrieval_svc: RetrievalService,
         deepseek_svc: DeepSeekService,
         citation_svc: CitationService,
-        conversation_svc: ConversationService,
     ) -> None:
         self._retrieval = retrieval_svc
         self._deepseek = deepseek_svc
         self._citation = citation_svc
-        self._conv = conversation_svc
 
     async def answer(
         self,
         question: str,
-        conversation_id: Optional[str],
+        conversation_id: str,
         session: "AsyncSession",
-        stream: bool = True,
+        context_messages: list[dict[str, str]] | None = None,
+        conversation_summary: str = "",
     ) -> AsyncIterator[dict]:
-        if not conversation_id:
-            conversation_id = str(uuid.uuid4())
-
         # 1. 敏感词检测
         if _SENSITIVE_RE.search(question):
             yield {"event": "token", "data": {"content": "问题包含敏感内容，无法处理。"}}
@@ -89,18 +84,16 @@ class RagService:
             # 整理现有最高分 chunk 摘要作为 available_info
             available_info = "暂无相关信息。" if not chunks else chunks[0]["content"][:80]
             fallback_text = insufficient_tmpl.replace("{available_info}", available_info)
-            message_id = await self._conv.save_exchange(
-                conversation_id=conversation_id,
-                question=question,
-                answer=fallback_text,
-                citation_ids=[],
-                model_name=settings.deepseek_model,
-                estimated_input_tokens=self._deepseek.estimate_tokens(question),
-                estimated_output_tokens=self._deepseek.estimate_tokens(fallback_text),
-                latency_ms=int(time.time() * 1000) - start_ms,
-            )
             yield {"event": "token", "data": {"content": fallback_text}}
-            yield {"event": "done", "data": {"message_id": message_id, "suggestions": follow_up_suggestions(question)}}
+            yield {"event": "done", "data": {
+                "citation_ids": [],
+                "citations": [],
+                "model_name": settings.deepseek_model,
+                "estimated_input_tokens": self._deepseek.estimate_tokens(question),
+                "estimated_output_tokens": self._deepseek.estimate_tokens(fallback_text),
+                "latency_ms": int(time.time() * 1000) - start_ms,
+                "suggestions": follow_up_suggestions(question),
+            }}
             return
 
         # 4. 格式化引用
@@ -115,10 +108,11 @@ class RagService:
         system_prompt = _load_prompt("system_prompt.txt")
         answer_tmpl = _load_prompt("answer_prompt.txt")
 
-        context_messages = await self._conv.get_context(conversation_id, last_n=6)
-        conversation_context = "\n".join(
-            f"{m['role'].upper()}: {m['content']}" for m in context_messages
-        ) or "（无历史对话）"
+        context_messages = context_messages or []
+        conversation_context = (
+            "请参考前序对话消息保持上下文一致。"
+            if context_messages else "（无历史对话）"
+        )
 
         retrieved_chunks_text = "<knowledge_data>\n" + "\n\n".join(
             f"[{i+1}] {c['title']}"
@@ -135,6 +129,10 @@ class RagService:
 
         messages = [
             {"role": "system", "content": system_prompt},
+            *([{
+                "role": "system",
+                "content": f"<conversation_memory>\n{conversation_summary}\n</conversation_memory>",
+            }] if conversation_summary else []),
             *context_messages,
             {"role": "user", "content": user_message},
         ]
@@ -148,20 +146,17 @@ class RagService:
         full_answer = "".join(answer_parts)
         latency_ms = int(time.time() * 1000) - start_ms
 
-        # 8. 保存问答日志
+        # 8. 返回持久化所需元数据，由 API 层更新预先创建的消息记录。
         citation_ids = [c.id for c in citations]
         estimated_input_tokens = self._deepseek.estimate_tokens(user_message + system_prompt)
         estimated_output_tokens = self._deepseek.estimate_tokens(full_answer)
 
-        message_id = await self._conv.save_exchange(
-            conversation_id=conversation_id,
-            question=question,
-            answer=full_answer,
-            citation_ids=citation_ids,
-            model_name=settings.deepseek_model,
-            estimated_input_tokens=estimated_input_tokens,
-            estimated_output_tokens=estimated_output_tokens,
-            latency_ms=latency_ms,
-        )
-
-        yield {"event": "done", "data": {"message_id": message_id, "suggestions": follow_up_suggestions(question)}}
+        yield {"event": "done", "data": {
+            "citation_ids": citation_ids,
+            "citations": [citation.model_dump() for citation in citations],
+            "model_name": settings.deepseek_model,
+            "estimated_input_tokens": estimated_input_tokens,
+            "estimated_output_tokens": estimated_output_tokens,
+            "latency_ms": latency_ms,
+            "suggestions": follow_up_suggestions(question),
+        }}

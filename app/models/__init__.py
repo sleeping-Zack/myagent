@@ -5,5 +5,6 @@ from app.models.chunk import DocumentChunk
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.feedback import QuestionFeedback
+from app.models.visitor_session import VisitorSession
 
-__all__ = ["Base", "Project", "Document", "DocumentChunk", "Conversation", "Message", "QuestionFeedback"]
+__all__ = ["Base", "Project", "Document", "DocumentChunk", "Conversation", "Message", "QuestionFeedback", "VisitorSession"]

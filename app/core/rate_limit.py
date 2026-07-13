@@ -17,6 +17,7 @@ class ChatRateLimiter:
         minute_limit: int,
         daily_limit: int,
         now: Optional[datetime] = None,
+        count_daily: bool = True,
     ) -> bool:
         now = now or datetime.now(timezone.utc)
         timestamp = now.timestamp()
@@ -30,11 +31,14 @@ class ChatRateLimiter:
             while requests and timestamp - requests[0] >= 60:
                 requests.popleft()
 
-            if len(requests) >= minute_limit or self._daily_count >= daily_limit:
+            if len(requests) >= minute_limit or (
+                count_daily and self._daily_count >= daily_limit
+            ):
                 return False
 
             requests.append(timestamp)
-            self._daily_count += 1
+            if count_daily:
+                self._daily_count += 1
             return True
 
 

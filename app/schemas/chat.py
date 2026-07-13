@@ -8,6 +8,7 @@ class ChatRequest(BaseModel):
 
     question: str = Field(..., max_length=500)
     conversation_id: Optional[UUID] = None
+    client_message_id: Optional[UUID] = None
     stream: bool = True
 
 

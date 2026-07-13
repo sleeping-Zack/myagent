@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r re
 COPY . .
 
 RUN mkdir -p /app/static /app/uploads /app/knowledge /app/models \
+    && sed -i 's/\r$//' /app/deploy/entrypoint.sh \
     && chmod +x /app/deploy/entrypoint.sh \
     && addgroup --system --gid 10001 app \
     && adduser --system --uid 10001 --ingroup app app \

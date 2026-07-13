@@ -10,7 +10,7 @@ import structlog
 from app.core.config import get_settings
 from app.core.database import AsyncSessionLocal, engine
 from app.core.logging import setup_logging
-from app.api import pages, chat, projects, feedback, health
+from app.api import pages, chat, projects, feedback, health, conversations
 from app.repositories.conversation_repository import ConversationRepository
 
 logger = structlog.get_logger()
@@ -60,7 +60,7 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         f"script-src 'self' 'nonce-{csp_nonce}'; "
-        "style-src 'self'; "
+        f"style-src 'self' 'nonce-{csp_nonce}'; "
         "img-src 'self' data:; font-src 'self' data:; "
         "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; "
         "form-action 'self'"
@@ -80,6 +80,7 @@ app.include_router(pages.router)
 app.include_router(chat.router)
 app.include_router(projects.router)
 app.include_router(feedback.router)
+app.include_router(conversations.router)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

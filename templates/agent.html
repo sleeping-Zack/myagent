@@ -7,7 +7,7 @@
 <script src="/static/js/sse-parser.js"></script>
 <script src="/static/vendor/marked.min.js"></script>
 <script src="/static/vendor/purify.min.js"></script>
-<style>
+<style nonce="{{ request.state.csp_nonce }}">
   /* 打字光标 */
   .typing-cursor::after {
     content: '▋';
@@ -35,6 +35,7 @@
     background-color: #334155;
     border-radius: 2px;
   }
+  #chat-input { field-sizing: content; }
   .ai-text > :first-child { margin-top: 0; }
   .ai-text > :last-child { margin-bottom: 0; }
   .ai-text p { margin: 0.45rem 0; }
@@ -90,22 +91,50 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100dvh-4rem)] lg:h-[calc(100dvh-4rem)]">
 
   <!-- 页面标题（移动端） -->
-  <div class="lg:hidden flex items-end justify-between gap-4 mb-6">
+  <div class="lg:hidden mb-6">
     <div>
       <h1 class="text-2xl font-bold text-white">AI 问答</h1>
       <p class="text-sm text-slate-400 mt-1">基于朱旭的个人知识库，用 AI 了解他的经历与技术。</p>
     </div>
-    <button type="button" data-action="new-conversation"
-            class="shrink-0 text-xs px-3 py-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
-      新建对话
-    </button>
+    <div class="flex gap-2 mt-3">
+      <button type="button" data-action="toggle-history"
+              class="shrink-0 text-xs px-3 py-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
+        历史记录
+      </button>
+      <button type="button" data-action="new-conversation"
+              class="shrink-0 text-xs px-3 py-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
+        新建对话
+      </button>
+    </div>
   </div>
 
   <!-- 双栏布局 -->
   <div class="flex flex-col lg:flex-row gap-6 h-full lg:h-[calc(100dvh-8rem)]">
 
+    <button id="history-overlay" type="button" data-action="close-history"
+            class="hidden fixed inset-0 z-40 bg-slate-950/80 lg:hidden" aria-label="关闭历史记录"></button>
+
+    <aside id="history-sidebar"
+           class="hidden fixed inset-y-0 left-0 z-50 w-72 flex-col bg-slate-900 border-r border-slate-700 p-4 lg:static lg:z-auto lg:flex lg:w-64 lg:shrink-0 lg:rounded-xl lg:border">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-sm font-semibold text-white">历史记录</h2>
+          <p class="text-xs text-slate-500 mt-1">仅当前浏览器可见</p>
+        </div>
+        <button type="button" data-action="close-history" class="lg:hidden text-slate-500 hover:text-white">关闭</button>
+      </div>
+      <button type="button" data-action="new-conversation"
+              class="w-full text-sm text-white bg-sky-600 hover:bg-sky-500 rounded-lg px-3 py-2 mb-4 transition-colors">
+        + 新建对话
+      </button>
+      <div id="conversation-list" class="flex-1 overflow-y-auto space-y-2 min-h-0">
+        <p class="text-xs text-slate-600 text-center py-8">正在加载...</p>
+      </div>
+      <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">匿名历史默认保留 30 天。清除浏览器 Cookie 后将无法恢复。</p>
+    </aside>
+
     <!-- 左侧：对话区（60%） -->
-    <div class="flex flex-col flex-1 lg:w-[60%] lg:max-w-none min-h-[500px] lg:min-h-0">
+    <div class="flex flex-col flex-1 min-w-0 w-full lg:w-[60%] lg:max-w-none min-h-[500px] lg:min-h-0">
 
       <!-- 标题（桌面端） -->
       <div class="hidden lg:flex items-end justify-between gap-4 mb-4">
@@ -128,7 +157,7 @@
           <div class="w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center shrink-0 text-white text-sm font-bold mt-0.5">
             AI
           </div>
-          <div class="flex-1">
+          <div class="flex-1 min-w-0">
             <div class="inline-block bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-slate-300 text-sm leading-relaxed max-w-lg">
               你好！我是朱旭的 AI 助手，基于他的个人公开知识库构建。<br>
               你可以问我关于他的项目经历、技术栈、学习背景等问题。
@@ -203,7 +232,7 @@
     </button>
 
     <!-- 右侧：证据来源区（40%） -->
-    <div id="citation-column" class="hidden lg:w-[38%] shrink-0 lg:flex flex-col min-h-[300px] lg:min-h-0">
+    <div id="citation-column" class="hidden lg:w-[30%] shrink-0 lg:flex flex-col min-h-[300px] lg:min-h-0">
       <div class="flex flex-col flex-1 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
 
         <!-- 来源标题 -->
@@ -255,14 +284,12 @@
   let currentAiMarkdown = '';
   let sourceCount = 0;
   let conversationId = null;
+  let conversations = [];
   let abortController = null;
   let requestStartedAt = 0;
 
   // ─── 输入框事件 ────────────────────────────────────────────────────────────
   function onInputChange(textarea) {
-    // 自适应高度
-    textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
     // 字数计数
     document.getElementById('char-count').textContent = textarea.value.length + '/500';
   }
@@ -288,13 +315,141 @@
     const el = document.createElement('div');
     el.className = 'flex gap-3 items-start justify-end';
     el.innerHTML = `
-      <div class="flex-1 flex justify-end">
+      <div class="flex-1 min-w-0 flex justify-end">
         <div class="inline-block bg-sky-700 border border-sky-600 rounded-2xl rounded-tr-sm px-4 py-3 text-white text-sm leading-relaxed max-w-sm whitespace-pre-wrap break-words">${escapeHtml(text)}</div>
       </div>
       <div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center shrink-0 text-white text-xs font-bold mt-0.5">我</div>
     `;
     container.appendChild(el);
     scrollToBottom();
+  }
+
+  function showWelcomeState() {
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = `
+      <div class="flex gap-3 items-start" id="welcome-msg">
+        <div class="w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center shrink-0 text-white text-sm font-bold mt-0.5">AI</div>
+        <div class="flex-1 min-w-0">
+          <div class="inline-block bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-slate-300 text-sm leading-relaxed max-w-lg">
+            你好！我是朱旭的 AI 助手，基于他的个人公开知识库构建。<br>
+            你可以问我关于他的项目经历、技术栈、学习背景等问题。
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('suggested-questions').classList.remove('hidden');
+    document.getElementById('conversation-status').textContent = '当前会话：新对话';
+    clearCitationPanel();
+  }
+
+  function formatConversationTime(value) {
+    const date = new Date(value);
+    return new Intl.DateTimeFormat('zh-CN', {
+      month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    }).format(date);
+  }
+
+  function renderConversationList() {
+    const list = document.getElementById('conversation-list');
+    list.innerHTML = '';
+    if (!conversations.length) {
+      list.innerHTML = '<p class="text-xs text-slate-600 text-center py-8">还没有历史对话</p>';
+      return;
+    }
+    conversations.forEach(conversation => {
+      const item = document.createElement('div');
+      item.className = `group rounded-lg border p-2 transition-colors ${conversation.id === conversationId ? 'border-sky-600 bg-sky-900/20' : 'border-slate-800 hover:border-slate-700'}`;
+
+      const select = document.createElement('button');
+      select.type = 'button';
+      select.dataset.action = 'select-conversation';
+      select.dataset.conversationId = conversation.id;
+      select.className = 'w-full text-left';
+      const title = document.createElement('p');
+      title.className = 'text-sm text-slate-200 truncate';
+      title.textContent = conversation.title || '新对话';
+      const meta = document.createElement('p');
+      meta.className = 'text-[11px] text-slate-600 mt-1';
+      meta.textContent = `${formatConversationTime(conversation.updated_at)} · ${conversation.message_count} 条`;
+      select.append(title, meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'flex gap-3 mt-2 text-[11px] text-slate-600';
+      actions.innerHTML = `
+        <button type="button" data-action="rename-conversation" data-conversation-id="${conversation.id}" class="hover:text-sky-400">重命名</button>
+        <button type="button" data-action="delete-conversation" data-conversation-id="${conversation.id}" class="hover:text-rose-400">删除</button>`;
+      item.append(select, actions);
+      list.appendChild(item);
+    });
+  }
+
+  async function loadConversations() {
+    const response = await fetch('/api/v1/conversations');
+    if (!response.ok) throw new Error('历史记录加载失败');
+    conversations = (await response.json()).items || [];
+    renderConversationList();
+  }
+
+  function appendStoredAssistantMessage(message, question) {
+    createAiMessageBubble(question || '');
+    currentAiMarkdown = message.content || (
+      message.status === 'failed' ? '生成失败，请重试。' :
+      message.status === 'stopped' ? '已停止生成。' : '生成已中断。'
+    );
+    renderMarkdown(currentAiTextEl, currentAiMarkdown);
+    currentAiTextEl.classList.remove('typing-cursor');
+    currentAiMsgEl.dataset.messageId = message.id;
+    const actions = currentAiMsgEl.querySelector('.message-actions');
+    if (message.status === 'completed') {
+      actions.classList.remove('hidden');
+      actions.classList.add('flex');
+      actions.querySelector('.answer-duration').textContent = message.latency_ms
+        ? `耗时 ${(message.latency_ms / 1000).toFixed(1)}s` : '';
+    } else {
+      const state = document.createElement('span');
+      state.className = 'text-amber-400';
+      state.textContent = message.status === 'stopped' ? '已停止' : '生成失败';
+      actions.replaceChildren(state);
+      actions.classList.remove('hidden');
+      actions.classList.add('flex');
+    }
+    currentAiMsgEl = null;
+    currentAiTextEl = null;
+    currentAiMarkdown = '';
+  }
+
+  async function loadConversation(id) {
+    if (isStreaming) return;
+    const response = await fetch(`/api/v1/conversations/${id}/messages?limit=50`);
+    if (response.status === 404) {
+      startNewConversation();
+      return;
+    }
+    if (!response.ok) throw new Error('会话消息加载失败');
+    const payload = await response.json();
+    conversationId = id;
+    const selected = conversations.find(item => item.id === id);
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('suggested-questions').classList.add('hidden');
+    clearCitationPanel();
+    let previousUserQuestion = '';
+    payload.items.forEach(message => {
+      if (message.role === 'user') {
+        previousUserQuestion = message.content;
+        appendUserMessage(message.content);
+      } else {
+        appendStoredAssistantMessage(message, previousUserQuestion);
+      }
+    });
+    const lastAssistant = [...payload.items].reverse().find(message => message.role === 'assistant');
+    (lastAssistant?.citation_data || []).forEach(renderCitation);
+    document.getElementById('conversation-status').textContent = `当前会话：${selected?.title || '历史对话'}`;
+    const url = new URL(window.location.href);
+    url.searchParams.set('c', id);
+    url.searchParams.delete('q');
+    history.replaceState({}, '', url);
+    renderConversationList();
+    closeHistory();
+    scrollToBottom(true);
   }
 
   // ─── 创建 AI 消息气泡（流式） ─────────────────────────────────────────────
@@ -306,7 +461,7 @@
     el.dataset.question = question;
     el.innerHTML = `
       <div class="w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center shrink-0 text-white text-sm font-bold mt-0.5">AI</div>
-      <div class="flex-1">
+      <div class="flex-1 min-w-0">
         <div class="inline-block bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-slate-300 text-sm leading-relaxed max-w-lg">
           <div class="ai-text typing-cursor break-words"></div>
         </div>
@@ -365,7 +520,7 @@
     const panel = document.getElementById('citation-panel');
     // 隐藏空状态
     const empty = document.getElementById('citation-empty');
-    if (empty) empty.style.display = 'none';
+    if (empty) empty.classList.add('hidden');
 
     sourceCount++;
     document.getElementById('source-count').textContent = sourceCount + ' 条';
@@ -423,10 +578,10 @@
     const input = document.getElementById('chat-input');
     const text = input.value.trim();
     if (!text) return;
+    document.getElementById('suggested-questions').classList.add('hidden');
 
     // 清空输入框
     input.value = '';
-    input.style.height = 'auto';
     document.getElementById('char-count').textContent = '0/500';
 
     // 显示用户消息
@@ -451,6 +606,7 @@
         body: JSON.stringify({
           question: text,
           conversation_id: conversationId,
+          client_message_id: crypto.randomUUID(),
           stream: true,
         }),
       });
@@ -491,6 +647,7 @@
       finalizeAiMessage(null);
     } finally {
       finishStreaming();
+      loadConversations().catch(console.error);
     }
   }
 
@@ -500,6 +657,10 @@
       case 'meta':
         conversationId = data.conversation_id;
         document.getElementById('conversation-status').textContent = '当前会话：已建立';
+        const url = new URL(window.location.href);
+        url.searchParams.set('c', conversationId);
+        url.searchParams.delete('q');
+        history.replaceState({}, '', url);
         break;
 
       case 'source':
@@ -514,6 +675,7 @@
         finalizeAiMessage(data?.message_id);
         finishStreaming();
         showFollowUpSuggestions(data?.suggestions);
+        loadConversations().catch(console.error);
         break;
 
       case 'error':
@@ -552,10 +714,10 @@
   }
 
   // ─── 工具函数 ──────────────────────────────────────────────────────────────
-  function scrollToBottom() {
+  function scrollToBottom(force = false) {
     const container = document.getElementById('chat-messages');
     const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 140;
-    if (nearBottom) container.scrollTop = container.scrollHeight;
+    if (force || nearBottom) container.scrollTop = container.scrollHeight;
   }
 
   function toggleCitations() {
@@ -584,8 +746,7 @@
     } else {
       const textarea = document.createElement('textarea');
       textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
+      textarea.className = 'fixed opacity-0';
       document.body.appendChild(textarea);
       textarea.select();
       document.execCommand('copy');
@@ -656,7 +817,54 @@
   function startNewConversation() {
     if (isStreaming) return;
     conversationId = null;
-    window.location.assign('/agent');
+    const url = new URL(window.location.href);
+    url.search = '';
+    history.replaceState({}, '', url);
+    showWelcomeState();
+    renderConversationList();
+    closeHistory();
+  }
+
+  function openHistory() {
+    document.getElementById('history-sidebar').classList.remove('hidden');
+    document.getElementById('history-sidebar').classList.add('flex');
+    document.getElementById('history-overlay').classList.remove('hidden');
+  }
+
+  function closeHistory() {
+    document.getElementById('history-sidebar').classList.add('hidden');
+    document.getElementById('history-sidebar').classList.remove('flex');
+    document.getElementById('history-overlay').classList.add('hidden');
+  }
+
+  async function renameConversation(id) {
+    const current = conversations.find(item => item.id === id);
+    const title = window.prompt('新的会话标题', current?.title || '');
+    if (!title?.trim()) return;
+    const response = await fetch(`/api/v1/conversations/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title.trim() }),
+    });
+    if (!response.ok) {
+      alert('重命名失败，请稍后重试。');
+      return;
+    }
+    await loadConversations();
+    if (conversationId === id) {
+      document.getElementById('conversation-status').textContent = `当前会话：${title.trim()}`;
+    }
+  }
+
+  async function deleteConversation(id) {
+    if (!window.confirm('确定删除这条会话及其全部消息吗？')) return;
+    const response = await fetch(`/api/v1/conversations/${id}`, { method: 'DELETE' });
+    if (!response.ok) {
+      alert('删除失败，请稍后重试。');
+      return;
+    }
+    if (conversationId === id) startNewConversation();
+    await loadConversations();
   }
 
   const chatInput = document.getElementById('chat-input');
@@ -667,6 +875,11 @@
     if (!button) return;
     const action = button.dataset.action;
     if (action === 'new-conversation') startNewConversation();
+    else if (action === 'toggle-history') openHistory();
+    else if (action === 'close-history') closeHistory();
+    else if (action === 'select-conversation') loadConversation(button.dataset.conversationId).catch(console.error);
+    else if (action === 'rename-conversation') renameConversation(button.dataset.conversationId);
+    else if (action === 'delete-conversation') deleteConversation(button.dataset.conversationId);
     else if (action === 'fill-send') fillAndSend(button.textContent.trim());
     else if (action === 'send') sendMessage();
     else if (action === 'stop') stopGeneration();
@@ -677,10 +890,20 @@
   });
 
   // ─── URL 参数 q 自动发送 ───────────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await loadConversations();
+    } catch (error) {
+      console.error(error);
+      document.getElementById('conversation-list').innerHTML = '<p class="text-xs text-rose-400 text-center py-8">历史记录暂时不可用</p>';
+    }
     const params = new URLSearchParams(window.location.search);
+    const activeConversation = params.get('c');
+    if (activeConversation) {
+      await loadConversation(activeConversation).catch(console.error);
+    }
     const q = params.get('q');
-    if (q && q.trim()) {
+    if (q && q.trim() && !activeConversation) {
       // 短暂延迟确保 DOM 就绪
       setTimeout(() => {
         document.getElementById('chat-input').value = q.trim();

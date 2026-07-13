@@ -39,12 +39,18 @@ class Settings(BaseSettings):
 
     # 限流
     chat_daily_limit: int = 500
-    chat_ip_minute_limit: int = 5
+    chat_ip_minute_limit: int = 30
+    chat_visitor_minute_limit: int = 5
     feedback_daily_limit: int = 500
     feedback_ip_minute_limit: int = 10
 
     # 匿名对话保留期限；设为 None 可关闭自动清理。
     conversation_retention_days: Optional[int] = 30
+    visitor_session_days: int = 30
+    visitor_cookie_name: str = "hr_session"
+    memory_recent_message_limit: int = 8
+    memory_recent_token_budget: int = 2500
+    memory_summary_max_chars: int = 4000
 
     # 日志
     log_level: str = "INFO"
