@@ -10,7 +10,7 @@ import structlog
 from app.core.config import get_settings
 from app.core.database import AsyncSessionLocal, engine
 from app.core.logging import setup_logging
-from app.api import pages, chat, projects, feedback, health, conversations
+from app.api import admin, pages, chat, projects, feedback, health, conversations
 from app.repositories.conversation_repository import ConversationRepository
 
 logger = structlog.get_logger()
@@ -81,6 +81,7 @@ app.include_router(chat.router)
 app.include_router(projects.router)
 app.include_router(feedback.router)
 app.include_router(conversations.router)
+app.include_router(admin.router)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

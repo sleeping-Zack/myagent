@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}对话管理 | 朱旭{% endblock %}
+{% block meta_description %}站点对话管理{% endblock %}
+
+{% block head_extra %}
+<script src="/static/vendor/marked.min.js"></script>
+<script src="/static/vendor/purify.min.js"></script>
+<style nonce="{{ request.state.csp_nonce }}">
+  .admin-markdown > :first-child { margin-top: 0; }
+  .admin-markdown > :last-child { margin-bottom: 0; }
+  .admin-markdown p { margin: 0.45rem 0; }
+  .admin-markdown ul, .admin-markdown ol { margin: 0.5rem 0; padding-left: 1.25rem; }
+  .admin-markdown ul { list-style: disc; }
+  .admin-markdown ol { list-style: decimal; }
+  .admin-markdown li { margin: 0.2rem 0; }
+  .admin-markdown strong { color: #f8fafc; font-weight: 600; }
+  .admin-markdown h1, .admin-markdown h2, .admin-markdown h3 {
+    color: #f8fafc; font-weight: 600; margin: 0.8rem 0 0.35rem;
+  }
+  .admin-markdown h1 { font-size: 1.05rem; }
+  .admin-markdown h2 { font-size: 1rem; }
+  .admin-markdown h3 { font-size: 0.925rem; }
+  .admin-markdown code { background: #020617; color: #7dd3fc; padding: 0.1rem 0.3rem; border-radius: 0.25rem; }
+  .admin-markdown pre { background: #020617; border: 1px solid #334155; padding: 0.75rem; overflow-x: auto; margin: 0.6rem 0; }
+  .admin-markdown pre code { background: transparent; color: #e2e8f0; padding: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-6">
+    <div>
+      <p class="text-xs font-medium text-sky-400 mb-1">ADMIN</p>
+      <h1 class="text-2xl font-bold text-white">对话管理</h1>
+    </div>
+    <form method="get" action="/admin" class="flex gap-2 w-full lg:w-auto">
+      <input name="q" value="{{ search }}" maxlength="100" placeholder="搜索问题或回答"
+             class="w-full lg:w-80 bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+      <button class="shrink-0 bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium rounded-md px-4 py-2">搜索</button>
+      {% if search %}<a href="/admin" class="shrink-0 border border-slate-700 hover:border-slate-500 text-slate-300 text-sm rounded-md px-3 py-2">清除</a>{% endif %}
+    </form>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 border-y border-slate-800 mb-6">
+    <div class="py-4 pr-4"><p class="text-xs text-slate-500">访客</p><p class="text-xl font-semibold text-white mt-1">{{ stats.visitors }}</p></div>
+    <div class="py-4 px-4 border-l border-slate-800"><p class="text-xs text-slate-500">会话</p><p class="text-xl font-semibold text-white mt-1">{{ stats.conversations }}</p></div>
+    <div class="py-4 px-4 border-l-0 lg:border-l border-t lg:border-t-0 border-slate-800"><p class="text-xs text-slate-500">消息</p><p class="text-xl font-semibold text-white mt-1">{{ stats.messages }}</p></div>
+    <div class="py-4 pl-4 border-l border-t lg:border-t-0 border-slate-800"><p class="text-xs text-slate-500">反馈</p><p class="text-xl font-semibold text-white mt-1">{{ stats.feedback }}</p></div>
+  </div>
+
+  <section class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-white">最近提问</h2>
+        <span class="text-xs text-slate-500">{{ conversations | length }} 条</span>
+      </div>
+      <div class="divide-y divide-slate-800" id="conversation-list">
+        {% for item in conversations %}
+        {% set conversation = item.conversation %}
+        <div class="conversation-row" data-conversation-row="{{ conversation.id }}">
+          <button type="button" data-conversation-id="{{ conversation.id }}" aria-expanded="false"
+                  class="conversation-item text-left w-full px-4 sm:px-5 py-4 hover:bg-slate-800/70 focus:outline-none focus:bg-slate-800 transition-colors">
+          <span class="flex items-start gap-3">
+            <span class="mt-0.5 w-6 h-6 shrink-0 flex items-center justify-center rounded bg-slate-800 text-sky-400 text-xs font-semibold">Q</span>
+            <span class="min-w-0 flex-1">
+              <span class="block text-sm font-medium text-slate-100 break-words">{{ item.question }}</span>
+              <span class="block text-xs text-slate-500 mt-1 line-clamp-2">{{ item.preview or '暂无回答' }}</span>
+            </span>
+            <span class="expand-icon shrink-0 text-slate-500 text-lg leading-6" aria-hidden="true">+</span>
+          </span>
+          <span class="flex items-center justify-between gap-2 text-[11px] text-slate-600 mt-2">
+            <span>{{ conversation.last_active_at.strftime('%m-%d %H:%M') }}</span>
+            <span>{{ conversation.message_count or 0 }} 条 · {{ conversation.status }}</span>
+          </span>
+          </button>
+          <div class="conversation-detail hidden border-t border-slate-800 bg-slate-950/50 px-4 sm:px-5 py-5" data-conversation-detail="{{ conversation.id }}">
+            <p class="detail-loading text-sm text-slate-500">正在加载...</p>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-500 text-center py-12">没有匹配的会话</p>
+        {% endfor %}
+      </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script nonce="{{ request.state.csp_nonce }}">
+  const list = document.getElementById('conversation-list');
+
+  function formatTime(value) {
+    return new Intl.DateTimeFormat('zh-CN', {
+      month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    }).format(new Date(value));
+  }
+
+  function appendMeta(container, message) {
+    const meta = document.createElement('div');
+    meta.className = 'flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500 mt-2';
+    const parts = [formatTime(message.created_at), message.status];
+    if (message.model_name) parts.push(message.model_name);
+    if (message.latency_ms !== null) parts.push(`${(message.latency_ms / 1000).toFixed(1)}s`);
+    if (message.feedback?.rating) parts.push(message.feedback.rating > 0 ? '有帮助' : '无帮助');
+    meta.textContent = parts.join(' · ');
+    container.appendChild(meta);
+  }
+
+  function renderMessages(container, data) {
+    container.innerHTML = '';
+    const header = document.createElement('div');
+    header.className = 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-5 text-xs text-slate-500';
+    header.textContent = `匿名访客 ${data.visitor_id || '未知'} · ${formatTime(data.created_at)} · ${data.status}`;
+    container.appendChild(header);
+
+    const messageList = document.createElement('div');
+    messageList.className = 'space-y-4';
+    container.appendChild(messageList);
+    data.messages.forEach(message => {
+      const row = document.createElement('article');
+      const isUser = message.role === 'user';
+      row.className = isUser ? 'ml-auto max-w-[90%] sm:max-w-[80%]' : 'mr-auto max-w-full';
+
+      const label = document.createElement('p');
+      label.className = 'text-[11px] text-slate-500 mb-1';
+      label.textContent = isUser ? '访客提问' : 'AI 回答';
+      row.appendChild(label);
+
+      const bubble = document.createElement('div');
+      bubble.className = isUser
+        ? 'bg-sky-900/40 border border-sky-800/60 rounded-lg px-4 py-3 text-sm text-slate-200 whitespace-pre-wrap break-words'
+        : 'bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-300 leading-relaxed admin-markdown break-words';
+      if (isUser || !window.marked || !window.DOMPurify) {
+        bubble.textContent = message.content;
+      } else {
+        bubble.innerHTML = DOMPurify.sanitize(marked.parse(message.content || '', { breaks: true, gfm: true }), {
+          USE_PROFILES: { html: true }, FORBID_TAGS: ['style'], FORBID_ATTR: ['style']
+        });
+      }
+      row.appendChild(bubble);
+      appendMeta(row, message);
+
+      if (message.feedback?.reason || message.feedback?.comment) {
+        const feedback = document.createElement('p');
+        feedback.className = 'text-xs text-amber-300/80 mt-2';
+        feedback.textContent = [message.feedback.reason, message.feedback.comment].filter(Boolean).join(' · ');
+        row.appendChild(feedback);
+      }
+      messageList.appendChild(row);
+    });
+  }
+
+  async function loadConversation(id, button) {
+    const detail = document.querySelector(`[data-conversation-detail="${id}"]`);
+    const isOpen = !detail.classList.contains('hidden');
+    document.querySelectorAll('.conversation-detail').forEach(item => item.classList.add('hidden'));
+    document.querySelectorAll('.conversation-item').forEach(item => {
+      item.classList.remove('bg-slate-800');
+      item.setAttribute('aria-expanded', 'false');
+      item.querySelector('.expand-icon').textContent = '+';
+    });
+    if (isOpen) return;
+
+    detail.classList.remove('hidden');
+    button.classList.add('bg-slate-800');
+    button.setAttribute('aria-expanded', 'true');
+    button.querySelector('.expand-icon').textContent = '−';
+    if (detail.dataset.loaded === 'true') return;
+
+    const response = await fetch(`/admin/api/conversations/${id}`, { headers: { 'Accept': 'application/json' } });
+    if (!response.ok) {
+      detail.innerHTML = '<p class="text-sm text-rose-400">会话加载失败</p>';
+      return;
+    }
+    const data = await response.json();
+    renderMessages(detail, data);
+    detail.dataset.loaded = 'true';
+  }
+
+  list.addEventListener('click', event => {
+    const button = event.target.closest('[data-conversation-id]');
+    if (button) loadConversation(button.dataset.conversationId, button);
+  });
+</script>
+{% endblock %}

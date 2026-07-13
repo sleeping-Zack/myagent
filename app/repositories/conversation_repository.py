@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy import delete, exists, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.conversation import Conversation
@@ -55,6 +55,74 @@ class ConversationRepository:
         )
         result = await session.execute(stmt)
         return [(row[0], row[1]) for row in result.all()]
+
+    async def list_for_admin(
+        self,
+        session: AsyncSession,
+        search: str = "",
+        limit: int = 100,
+    ) -> list[tuple[Conversation, str | None, str | None]]:
+        first_question = (
+            select(Message.content)
+            .where(
+                Message.conversation_id == Conversation.id,
+                Message.role == "user",
+            )
+            .order_by(Message.sequence_no.asc())
+            .limit(1)
+            .scalar_subquery()
+        )
+        latest_preview = (
+            select(Message.content)
+            .where(Message.conversation_id == Conversation.id)
+            .order_by(Message.sequence_no.desc())
+            .limit(1)
+            .scalar_subquery()
+        )
+        stmt = select(
+            Conversation,
+            first_question.label("first_question"),
+            latest_preview.label("last_message_preview"),
+        )
+        if search:
+            pattern = f"%{search}%"
+            matching_message = exists(
+                select(Message.id).where(
+                    Message.conversation_id == Conversation.id,
+                    Message.content.ilike(pattern),
+                )
+            )
+            stmt = stmt.where(
+                or_(Conversation.title.ilike(pattern), matching_message)
+            )
+        stmt = stmt.order_by(
+            Conversation.last_message_at.desc().nullslast(),
+            Conversation.created_at.desc(),
+        ).limit(limit)
+        result = await session.execute(stmt)
+        return [(row[0], row[1], row[2]) for row in result.all()]
+
+    async def get_for_admin(
+        self,
+        session: AsyncSession,
+        conversation_id: uuid.UUID,
+    ) -> Conversation | None:
+        result = await session.execute(
+            select(Conversation).where(Conversation.id == conversation_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def admin_stats(self, session: AsyncSession) -> dict[str, int]:
+        conversations = await session.scalar(select(func.count(Conversation.id)))
+        visitors = await session.scalar(select(func.count(VisitorSession.id)))
+        messages = await session.scalar(select(func.count(Message.id)))
+        feedback = await session.scalar(select(func.count(QuestionFeedback.id)))
+        return {
+            "conversations": int(conversations or 0),
+            "visitors": int(visitors or 0),
+            "messages": int(messages or 0),
+            "feedback": int(feedback or 0),
+        }
 
     async def get_owned(
         self,

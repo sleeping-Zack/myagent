@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     memory_recent_token_budget: int = 2500
     memory_summary_max_chars: int = 4000
 
+    # 管理端
+    admin_username: str = "admin"
+    admin_password: str = ""
+
     # 日志
     log_level: str = "INFO"
     save_raw_ip: bool = False
