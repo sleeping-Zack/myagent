@@ -29,7 +29,7 @@
     <div class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 leading-relaxed prose-sm prose-invert max-w-none
                 {% if is_streaming %}streaming-cursor{% endif %}">
       {% if content %}
-        {{ content | safe }}
+        {{ content }}
       {% else %}
         <span class="text-slate-500 italic">正在思考...</span>
       {% endif %}

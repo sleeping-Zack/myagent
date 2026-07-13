@@ -17,6 +17,8 @@ class EmbeddingService:
             self._api_client = AsyncOpenAI(
                 api_key=settings.embedding_api_key,
                 base_url=settings.embedding_api_base_url,
+                timeout=settings.llm_timeout_seconds,
+                max_retries=settings.llm_max_retries,
             )
         return self._api_client
 
@@ -70,11 +72,14 @@ class EmbeddingService:
             return await self._api_embed_documents(texts)
         return await asyncio.to_thread(self._local_embed_documents, texts)
 
-    def embed_query(self, text: str) -> list[float]:
-        return asyncio.run(self.async_embed_query(text))
-
-    def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        return asyncio.run(self.async_embed_documents(texts))
+    def is_configured(self) -> bool:
+        if settings.embedding_mode == "api":
+            return bool(
+                settings.embedding_api_key
+                and settings.embedding_api_base_url
+                and settings.embedding_api_model
+            )
+        return bool(settings.embedding_model_path)
 
 
 @lru_cache(maxsize=1)

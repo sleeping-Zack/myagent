@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% set active_page = 'evaluation' %}
+
+{% block title %}RAG 评测 | 朱旭{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <h1 class="text-3xl font-bold text-white">RAG 检索评测</h1>
+  <p class="text-slate-400 mt-3 max-w-3xl">使用冻结问题集检查 Top 5 检索结果能否命中至少一个预先标注的可接受知识来源。每题只有一个证据命中要求，因此 Recall@5 按命中问题数占比计算。该结果只衡量本站的小规模离线检索，不代表生成答案准确率、线上流量或商业效果。</p>
+
+  {% if result %}
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+      <p class="text-xs text-slate-500">样本量</p>
+      <p class="text-3xl font-bold text-white mt-2">{{ result.sample_size }}</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+      <p class="text-xs text-slate-500">Recall@5</p>
+      <p class="text-3xl font-bold text-sky-400 mt-2">{{ "%.1f" | format(result.metrics.recall_at_5 * 100) }}%</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+      <p class="text-xs text-slate-500">P95 检索延迟</p>
+      <p class="text-3xl font-bold text-white mt-2">{{ "%.0f" | format(result.metrics.p95_retrieval_latency_ms) }} ms</p>
+    </div>
+  </div>
+
+  <div class="mt-8 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+    <div class="px-5 py-4 border-b border-slate-800 flex flex-wrap justify-between gap-2 text-sm">
+      <span class="text-white font-semibold">逐题结果</span>
+      <span class="text-slate-500">生成时间：{{ result.generated_at }}</span>
+    </div>
+    <div class="divide-y divide-slate-800">
+      {% for case in result.cases %}
+      <div class="p-5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-xs text-slate-500">{{ case.category }} · {{ case.id }}</p>
+            <p class="text-sm text-slate-200 mt-1">{{ case.question }}</p>
+          </div>
+          <span class="shrink-0 text-xs px-2 py-1 rounded {% if case.recall_at_5 == 1 %}bg-emerald-500/10 text-emerald-400{% else %}bg-amber-500/10 text-amber-400{% endif %}">
+            Recall {{ "%.2f" | format(case.recall_at_5) }}
+          </span>
+        </div>
+        <p class="text-xs text-slate-500 mt-3">期望来源：{{ case.expected_sources | join('、') }}</p>
+        <p class="text-xs text-slate-500 mt-1">实际来源：{{ case.retrieved_sources | join('、') }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="mt-8 bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 text-amber-200">
+    评测结果尚未生成。运行 <code class="text-amber-100">python scripts/evaluate_rag.py</code> 后，此页面会读取最新结果。
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

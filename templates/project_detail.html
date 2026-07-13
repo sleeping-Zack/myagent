@@ -2,6 +2,9 @@
 {% set active_page = 'projects' %}
 
 {% block title %}{{ project.title }} | 朱旭{% endblock %}
+{% block meta_description %}{{ project.one_liner or project.title }}{% endblock %}
+{% block og_title %}{{ project.title }} | 朱旭项目{% endblock %}
+{% block og_description %}{{ project.one_liner or project.title }}{% endblock %}
 
 {% block content %}
 
@@ -79,6 +82,13 @@
         </div>
       </div>
 
+      {% if project.cover_image %}
+      <figure class="mb-8 overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+        <img src="{{ project.cover_image }}" alt="{{ project.title }} 架构示意图" class="w-full" />
+        <figcaption class="px-4 py-2 text-xs text-slate-500">架构示意图，非产品运行截图</figcaption>
+      </figure>
+      {% endif %}
+
       <!-- 正文内容 -->
       <div class="prose prose-invert prose-slate max-w-none
                   prose-headings:text-white prose-headings:font-semibold
@@ -89,7 +99,7 @@
                   prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700
                   prose-a:text-sky-400 hover:prose-a:text-sky-300
                   prose-blockquote:border-sky-500 prose-blockquote:text-slate-400">
-        {{ project.content_html | safe }}
+        {{ project.content_html | sanitize_html | safe }}
       </div>
 
     </div><!-- /主内容区 -->
@@ -131,8 +141,10 @@
         <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">相关链接</h3>
         <ul class="space-y-2">
           {% for link in project.related_links %}
+          {% set href = link.url | safe_url %}
+          {% if href %}
           <li>
-            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer"
+            <a href="{{ href }}" target="_blank" rel="noopener noreferrer"
                class="flex items-center gap-2 text-sm text-sky-400 hover:text-sky-300 transition-colors">
               <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -141,6 +153,7 @@
               {{ link.label }}
             </a>
           </li>
+          {% endif %}
           {% endfor %}
         </ul>
       </div>

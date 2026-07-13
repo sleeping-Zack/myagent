@@ -27,8 +27,8 @@ class ConversationService:
         answer: str,
         citation_ids: list[str],
         model_name: str,
-        input_tokens: int,
-        output_tokens: int,
+        estimated_input_tokens: int,
+        estimated_output_tokens: int,
         latency_ms: int,
     ) -> str:
         conv_uuid = uuid.UUID(conversation_id)
@@ -50,8 +50,8 @@ class ConversationService:
                 "content": question,
                 "citation_ids": [],
                 "model_name": None,
-                "input_tokens": None,
-                "output_tokens": None,
+                "estimated_input_tokens": None,
+                "estimated_output_tokens": None,
                 "latency_ms": None,
             },
         )
@@ -64,8 +64,8 @@ class ConversationService:
                 "content": answer,
                 "citation_ids": citation_ids,
                 "model_name": model_name,
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
+                "estimated_input_tokens": estimated_input_tokens,
+                "estimated_output_tokens": estimated_output_tokens,
                 "latency_ms": latency_ms,
             },
         )
@@ -90,6 +90,6 @@ class ConversationService:
             .select_from(Message)
             .where(Message.conversation_id == conv.id)
         )
-        result = await self._session.execute(count_stmt)
-        count = result.scalar_one()
+        count_result = await self._session.execute(count_stmt)
+        count = count_result.scalar_one()
         return count >= 40

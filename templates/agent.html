@@ -4,6 +4,9 @@
 {% block title %}AI 问答 | 朱旭{% endblock %}
 
 {% block head_extra %}
+<script src="/static/js/sse-parser.js"></script>
+<script src="/static/vendor/marked.min.js"></script>
+<script src="/static/vendor/purify.min.js"></script>
 <style>
   /* 打字光标 */
   .typing-cursor::after {
@@ -32,29 +35,88 @@
     background-color: #334155;
     border-radius: 2px;
   }
+  .ai-text > :first-child { margin-top: 0; }
+  .ai-text > :last-child { margin-bottom: 0; }
+  .ai-text p { margin: 0.45rem 0; }
+  .ai-text h1,
+  .ai-text h2,
+  .ai-text h3 {
+    color: #f8fafc;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0.8rem 0 0.35rem;
+  }
+  .ai-text h1 { font-size: 1.05rem; }
+  .ai-text h2 { font-size: 1rem; }
+  .ai-text h3 { font-size: 0.925rem; }
+  .ai-text ul,
+  .ai-text ol {
+    margin: 0.45rem 0;
+    padding-left: 1.25rem;
+  }
+  .ai-text ul { list-style: disc; }
+  .ai-text ol { list-style: decimal; }
+  .ai-text li { margin: 0.2rem 0; padding-left: 0.15rem; }
+  .ai-text strong { color: #f8fafc; font-weight: 600; }
+  .ai-text a { color: #38bdf8; text-decoration: underline; }
+  .ai-text blockquote {
+    border-left: 3px solid #0ea5e9;
+    color: #94a3b8;
+    margin: 0.6rem 0;
+    padding-left: 0.75rem;
+  }
+  .ai-text code {
+    background: #0f172a;
+    border-radius: 0.25rem;
+    color: #7dd3fc;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    padding: 0.1rem 0.3rem;
+  }
+  .ai-text pre {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 0.375rem;
+    margin: 0.6rem 0;
+    overflow-x: auto;
+    padding: 0.75rem;
+  }
+  .ai-text pre code { background: transparent; color: #e2e8f0; padding: 0; }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-4rem)]">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100dvh-4rem)] lg:h-[calc(100dvh-4rem)]">
 
   <!-- 页面标题（移动端） -->
-  <div class="lg:hidden mb-6">
-    <h1 class="text-2xl font-bold text-white">AI 问答</h1>
-    <p class="text-sm text-slate-400 mt-1">基于朱旭的个人知识库，用 AI 了解他的经历与技术。</p>
+  <div class="lg:hidden flex items-end justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white">AI 问答</h1>
+      <p class="text-sm text-slate-400 mt-1">基于朱旭的个人知识库，用 AI 了解他的经历与技术。</p>
+    </div>
+    <button type="button" data-action="new-conversation"
+            class="shrink-0 text-xs px-3 py-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
+      新建对话
+    </button>
   </div>
 
   <!-- 双栏布局 -->
-  <div class="flex flex-col lg:flex-row gap-6 h-full lg:h-[calc(100vh-8rem)]">
+  <div class="flex flex-col lg:flex-row gap-6 h-full lg:h-[calc(100dvh-8rem)]">
 
     <!-- 左侧：对话区（60%） -->
     <div class="flex flex-col flex-1 lg:w-[60%] lg:max-w-none min-h-[500px] lg:min-h-0">
 
       <!-- 标题（桌面端） -->
-      <div class="hidden lg:block mb-4">
-        <h1 class="text-2xl font-bold text-white">AI 问答</h1>
-        <p class="text-sm text-slate-400 mt-1">基于朱旭的个人知识库，用 AI 了解他的经历与技术。</p>
+      <div class="hidden lg:flex items-end justify-between gap-4 mb-4">
+        <div>
+          <h1 class="text-2xl font-bold text-white">AI 问答</h1>
+          <p class="text-sm text-slate-400 mt-1">基于朱旭的个人知识库，用 AI 了解他的经历与技术。</p>
+        </div>
+        <button type="button" data-action="new-conversation"
+                class="text-xs px-3 py-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
+          新建对话
+        </button>
       </div>
 
       <!-- 消息列表 -->
@@ -78,20 +140,18 @@
 
       <!-- 推荐问题（初始显示） -->
       <div id="suggested-questions" class="mb-3">
-        <p class="text-xs text-slate-500 mb-2">推荐问题：</p>
+        <p class="text-xs text-slate-500 mb-2">您可能想问：</p>
         <div class="flex flex-wrap gap-2">
           {% set suggestions = [
-            "介绍一下朱旭的背景",
-            "法奥机器人RAG项目是怎么做的？",
-            "他有哪些 Python 后端经验？",
-            "血压模块项目解决了什么问题？",
-            "他熟悉哪些 AI/LLM 技术？",
-            "个人展示 Agent 是如何实现的？",
-            "他的求职意向是什么？"
+            "请用 HR 视角快速介绍一下朱旭",
+            "朱旭目前的求职意向和岗位匹配度是什么？",
+            "为什么朱旭适合 Agent 应用开发实习？",
+            "朱旭最有代表性的项目产出是什么？",
+            "朱旭为什么从嵌入式转向 AI 应用开发？",
+            "朱旭目前最大的不足是什么，如何补齐？"
           ] %}
           {% for q in suggestions %}
-          <button type="button"
-                  onclick="fillAndSend(this.textContent.trim())"
+          <button type="button" data-action="fill-send"
                   class="text-xs text-sky-400 bg-sky-900/30 border border-sky-800/50 hover:bg-sky-900/60 hover:border-sky-700 rounded-full px-3 py-1.5 transition-colors">
             {{ q }}
           </button>
@@ -100,7 +160,7 @@
       </div>
 
       <!-- 输入区 -->
-      <div class="relative">
+      <div class="relative sticky bottom-0 z-10 bg-slate-950 pt-2 pb-1 lg:static lg:bg-transparent lg:p-0">
         <div class="flex gap-2 items-end bg-slate-800 border border-slate-700 focus-within:border-sky-600 rounded-xl p-3 transition-colors">
           <textarea
             id="chat-input"
@@ -108,29 +168,42 @@
             maxlength="500"
             placeholder="输入问题，了解朱旭的经历与技术…"
             class="flex-1 bg-transparent text-slate-200 placeholder-slate-500 text-sm resize-none outline-none leading-relaxed max-h-32"
-            oninput="onInputChange(this)"
-            onkeydown="handleKeyDown(event)"
           ></textarea>
           <div class="flex items-center gap-2 shrink-0">
             <span id="char-count" class="text-xs text-slate-600">0/500</span>
             <button id="send-btn"
                     type="button"
-                    onclick="sendMessage()"
+                    data-action="send"
                     class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
               </svg>
             </button>
+            <button id="stop-btn"
+                    type="button"
+                    data-action="stop"
+                    class="hidden w-8 h-8 items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-500 transition-colors"
+                    aria-label="停止生成">
+              <span class="block w-3 h-3 rounded-sm bg-white"></span>
+            </button>
           </div>
         </div>
-        <p class="text-xs text-slate-600 mt-1.5 px-1">Enter 发送 · Shift+Enter 换行</p>
+        <div class="flex items-center justify-between mt-1.5 px-1">
+          <p class="text-xs text-slate-600">Enter 发送 · Shift+Enter 换行</p>
+          <p id="conversation-status" class="text-xs text-slate-600">当前会话：新对话</p>
+        </div>
       </div>
 
     </div><!-- /左侧 -->
 
+    <button id="citation-toggle" type="button" data-action="toggle-citations"
+            class="lg:hidden w-full px-4 py-3 rounded-lg border border-slate-700 text-sm text-slate-300">
+      查看引用来源（<span id="mobile-source-count">0</span>）
+    </button>
+
     <!-- 右侧：证据来源区（40%） -->
-    <div class="lg:w-[38%] shrink-0 flex flex-col min-h-[300px] lg:min-h-0">
+    <div id="citation-column" class="hidden lg:w-[38%] shrink-0 lg:flex flex-col min-h-[300px] lg:min-h-0">
       <div class="flex flex-col flex-1 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
 
         <!-- 来源标题 -->
@@ -174,12 +247,16 @@
 {% endblock %}
 
 {% block scripts_extra %}
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
   // ─── 状态 ─────────────────────────────────────────────────────────────────
   let isStreaming = false;
   let currentAiMsgEl = null;
   let currentAiTextEl = null;
+  let currentAiMarkdown = '';
   let sourceCount = 0;
+  let conversationId = null;
+  let abortController = null;
+  let requestStartedAt = 0;
 
   // ─── 输入框事件 ────────────────────────────────────────────────────────────
   function onInputChange(textarea) {
@@ -221,29 +298,39 @@
   }
 
   // ─── 创建 AI 消息气泡（流式） ─────────────────────────────────────────────
-  function createAiMessageBubble() {
+  function createAiMessageBubble(question) {
     const container = document.getElementById('chat-messages');
     const el = document.createElement('div');
     el.className = 'flex gap-3 items-start';
+    el.dataset.aiMessage = 'true';
+    el.dataset.question = question;
     el.innerHTML = `
       <div class="w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center shrink-0 text-white text-sm font-bold mt-0.5">AI</div>
       <div class="flex-1">
         <div class="inline-block bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 text-slate-300 text-sm leading-relaxed max-w-lg">
-          <span class="ai-text typing-cursor"></span>
+          <div class="ai-text typing-cursor break-words"></div>
+        </div>
+        <div class="message-actions hidden items-center flex-wrap gap-2 mt-2 text-xs text-slate-500">
+          <button type="button" data-action="copy" class="hover:text-sky-400">复制</button>
+          <button type="button" data-action="retry" class="hover:text-sky-400">重新生成</button>
+          <button type="button" data-action="feedback" data-rating="1" class="feedback-button hover:text-emerald-400">有帮助</button>
+          <button type="button" data-action="feedback" data-rating="-1" class="feedback-button hover:text-rose-400">没帮助</button>
+          <span class="answer-duration ml-1"></span>
         </div>
       </div>
     `;
     container.appendChild(el);
     currentAiMsgEl = el;
     currentAiTextEl = el.querySelector('.ai-text');
+    currentAiMarkdown = '';
     scrollToBottom();
   }
 
   // ─── 追加 token 到当前 AI 消息 ────────────────────────────────────────────
   function appendToken(token) {
     if (!currentAiTextEl) return;
-    // 用 textContent 累积，保留换行
-    currentAiTextEl.textContent += token;
+    currentAiMarkdown += token;
+    renderMarkdown(currentAiTextEl, currentAiMarkdown);
     scrollToBottom();
   }
 
@@ -255,7 +342,22 @@
     isStreaming = false;
     currentAiMsgEl = null;
     currentAiTextEl = null;
+    currentAiMarkdown = '';
+    abortController = null;
     setButtonState(false);
+  }
+
+  function finalizeAiMessage(messageId) {
+    if (!currentAiMsgEl) return;
+    if (messageId) currentAiMsgEl.dataset.messageId = messageId;
+    const actions = currentAiMsgEl.querySelector('.message-actions');
+    actions.classList.remove('hidden');
+    actions.classList.add('flex');
+    const elapsed = Math.max(0, performance.now() - requestStartedAt);
+    actions.querySelector('.answer-duration').textContent = `耗时 ${(elapsed / 1000).toFixed(1)}s`;
+    if (!messageId) {
+      currentAiMsgEl.querySelectorAll('.feedback-button').forEach(button => button.classList.add('hidden'));
+    }
   }
 
   // ─── 渲染来源卡片 ─────────────────────────────────────────────────────────
@@ -268,27 +370,33 @@
     sourceCount++;
     document.getElementById('source-count').textContent = sourceCount + ' 条';
     document.getElementById('source-count').classList.remove('hidden');
-
-    const typeColors = {
-      'project': 'text-sky-400 bg-sky-900/40 border-sky-700/40',
-      'experience': 'text-violet-400 bg-violet-900/40 border-violet-700/40',
-      'skill': 'text-emerald-400 bg-emerald-900/40 border-emerald-700/40',
-      'resume': 'text-amber-400 bg-amber-900/40 border-amber-700/40',
-    };
-    const typeColor = typeColors[citation.source_type] || 'text-slate-400 bg-slate-800 border-slate-700';
-    const typeLabel = citation.source_type || '文档';
+    document.getElementById('mobile-source-count').textContent = sourceCount;
 
     const card = document.createElement('div');
-    card.className = 'bg-slate-800/60 border border-slate-700 rounded-lg p-3 text-xs';
+    card.className = 'bg-slate-800/60 border border-slate-700 hover:border-slate-500 rounded-lg p-3 text-xs cursor-pointer transition-colors';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('title', '当前无权限查看来源');
     card.innerHTML = `
       <div class="flex items-start gap-2 mb-1.5">
         <span class="font-medium text-white leading-snug flex-1">${escapeHtml(citation.title || '未命名来源')}</span>
-        <span class="shrink-0 ${typeColor} border rounded px-1.5 py-0.5 font-medium">${escapeHtml(typeLabel)}</span>
+        <span class="shrink-0 text-slate-400 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 font-medium">来源</span>
       </div>
-      ${citation.content ? `<p class="text-slate-400 leading-relaxed line-clamp-3">${escapeHtml(citation.content)}</p>` : ''}
-      ${citation.score !== undefined ? `<p class="text-slate-600 mt-1.5">相关度：${(citation.score * 100).toFixed(0)}%</p>` : ''}
+      <p class="text-slate-600 leading-relaxed">点击查看来源权限</p>
+      ${citation.ranking_score !== undefined ? `<p class="text-slate-600 mt-1.5">综合排序分：${Number(citation.ranking_score).toFixed(2)}</p>` : ''}
     `;
+    card.addEventListener('click', showSourcePermissionNotice);
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        showSourcePermissionNotice();
+      }
+    });
     panel.appendChild(card);
+  }
+
+  function showSourcePermissionNotice() {
+    alert('当前无权限查看来源');
   }
 
   // ─── 清空来源面板 ─────────────────────────────────────────────────────────
@@ -304,6 +412,7 @@
       </div>
     `;
     sourceCount = 0;
+    document.getElementById('mobile-source-count').textContent = '0';
     document.getElementById('source-count').classList.add('hidden');
   }
 
@@ -320,9 +429,6 @@
     input.style.height = 'auto';
     document.getElementById('char-count').textContent = '0/500';
 
-    // 隐藏推荐问题
-    document.getElementById('suggested-questions').style.display = 'none';
-
     // 显示用户消息
     appendUserMessage(text);
 
@@ -330,61 +436,59 @@
     clearCitationPanel();
 
     // 创建 AI 消息气泡
-    createAiMessageBubble();
+    createAiMessageBubble(text);
 
     isStreaming = true;
+    requestStartedAt = performance.now();
+    abortController = new AbortController();
     setButtonState(true);
 
     try {
       const resp = await fetch('/api/v1/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, stream: true }),
+        signal: abortController.signal,
+        body: JSON.stringify({
+          question: text,
+          conversation_id: conversationId,
+          stream: true,
+        }),
       });
 
       if (!resp.ok) {
-        throw new Error(`HTTP ${resp.status}`);
+        const payload = await resp.json().catch(() => ({}));
+        throw new Error(payload.error || `HTTP ${resp.status}`);
       }
 
       const reader = resp.body.getReader();
       const decoder = new TextDecoder('utf-8');
-      let buffer = '';
+      const parser = new SSEFrameParser((eventType, dataStr) => {
+        if (!dataStr || dataStr === '[DONE]') return;
+        try {
+          handleSSEEvent(eventType, JSON.parse(dataStr));
+        } catch (error) {
+          console.warn('Ignored invalid SSE payload:', error);
+        }
+      });
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-
-        // 处理 SSE 行
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // 保留最后一行（可能不完整）
-
-        let currentEventType = null;
-        for (const line of lines) {
-          if (line.startsWith('event:')) {
-            currentEventType = line.slice(6).trim();
-          } else if (line.startsWith('data:')) {
-            const dataStr = line.slice(5).trim();
-            if (!dataStr || dataStr === '[DONE]') continue;
-            let data;
-            try {
-              data = JSON.parse(dataStr);
-            } catch {
-              continue;
-            }
-            handleSSEEvent(currentEventType, data);
-            currentEventType = null;
-          }
-        }
+        parser.push(decoder.decode(value, { stream: true }));
       }
+      parser.push(decoder.decode());
+      parser.finish();
 
     } catch (err) {
       console.error('Chat error:', err);
       if (currentAiTextEl) {
-        currentAiTextEl.textContent = '请求出错，请稍后重试。';
+        currentAiTextEl.textContent = err.name === 'AbortError'
+          ? '已停止生成。'
+          : `${err.message || '请求出错，请稍后重试。'} 请重试。`;
         currentAiTextEl.classList.remove('typing-cursor');
       }
+      finalizeAiMessage(null);
     } finally {
       finishStreaming();
     }
@@ -394,6 +498,8 @@
   function handleSSEEvent(eventType, data) {
     switch (eventType) {
       case 'meta':
+        conversationId = data.conversation_id;
+        document.getElementById('conversation-status').textContent = '当前会话：已建立';
         break;
 
       case 'source':
@@ -405,6 +511,7 @@
         break;
 
       case 'done':
+        finalizeAiMessage(data?.message_id);
         finishStreaming();
         showFollowUpSuggestions(data?.suggestions);
         break;
@@ -414,6 +521,7 @@
           currentAiTextEl.textContent = data?.message || '回答时发生错误。';
           currentAiTextEl.classList.remove('typing-cursor');
         }
+        finalizeAiMessage(null);
         finishStreaming();
         break;
     }
@@ -431,7 +539,7 @@
         <p class="text-xs text-slate-500 mb-2">你可以继续问：</p>
         <div class="flex flex-wrap gap-2">
           ${suggestions.map(s => `
-            <button type="button" onclick="fillAndSend(this.textContent.trim())"
+            <button type="button" data-action="fill-send"
                     class="text-xs text-sky-400 bg-sky-900/30 border border-sky-800/50 hover:bg-sky-900/60 rounded-full px-3 py-1.5 transition-colors">
               ${escapeHtml(s)}
             </button>
@@ -446,12 +554,79 @@
   // ─── 工具函数 ──────────────────────────────────────────────────────────────
   function scrollToBottom() {
     const container = document.getElementById('chat-messages');
-    container.scrollTop = container.scrollHeight;
+    const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 140;
+    if (nearBottom) container.scrollTop = container.scrollHeight;
+  }
+
+  function toggleCitations() {
+    document.getElementById('citation-column').classList.toggle('hidden');
   }
 
   function setButtonState(loading) {
     const btn = document.getElementById('send-btn');
     btn.disabled = loading;
+    btn.classList.toggle('hidden', loading);
+    const stop = document.getElementById('stop-btn');
+    stop.classList.toggle('hidden', !loading);
+    stop.classList.toggle('flex', loading);
+  }
+
+  function stopGeneration() {
+    if (abortController) abortController.abort();
+  }
+
+  async function copyAnswer(button) {
+    const message = button.closest('[data-ai-message]');
+    const text = message?.querySelector('.ai-text')?.innerText || '';
+    if (!text) return;
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      textarea.remove();
+    }
+    button.textContent = '已复制';
+  }
+
+  function retryAnswer(button) {
+    if (isStreaming) return;
+    const question = button.closest('[data-ai-message]')?.dataset.question;
+    if (!question) return;
+    const input = document.getElementById('chat-input');
+    input.value = question;
+    onInputChange(input);
+    sendMessage();
+  }
+
+  async function submitFeedback(button, rating) {
+    const message = button.closest('[data-ai-message]');
+    const messageId = message?.dataset.messageId;
+    if (!messageId || !conversationId) return;
+
+    let reason = null;
+    if (rating === -1) {
+      reason = window.prompt('可选原因：信息错误、与问题无关、引用不支持结论、内容过长、信息已过期') || null;
+      if (reason) reason = reason.slice(0, 100);
+    }
+
+    const response = await fetch(`/api/v1/messages/${messageId}/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversation_id: conversationId, rating, reason }),
+    });
+    if (!response.ok) {
+      alert('反馈提交失败，请稍后重试。');
+      return;
+    }
+    message.querySelectorAll('.feedback-button').forEach(item => item.disabled = true);
+    button.textContent = '已反馈';
+    button.classList.add(rating === 1 ? 'text-emerald-400' : 'text-rose-400');
   }
 
   function escapeHtml(str) {
@@ -463,6 +638,43 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
+
+  function renderMarkdown(element, markdown) {
+    if (!element) return;
+    if (!window.marked || !window.DOMPurify) {
+      element.textContent = markdown;
+      return;
+    }
+    const html = marked.parse(markdown, { breaks: true, gfm: true });
+    element.innerHTML = DOMPurify.sanitize(html, {
+      USE_PROFILES: { html: true },
+      FORBID_TAGS: ['style'],
+      FORBID_ATTR: ['style'],
+    });
+  }
+
+  function startNewConversation() {
+    if (isStreaming) return;
+    conversationId = null;
+    window.location.assign('/agent');
+  }
+
+  const chatInput = document.getElementById('chat-input');
+  chatInput.addEventListener('input', () => onInputChange(chatInput));
+  chatInput.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+    const action = button.dataset.action;
+    if (action === 'new-conversation') startNewConversation();
+    else if (action === 'fill-send') fillAndSend(button.textContent.trim());
+    else if (action === 'send') sendMessage();
+    else if (action === 'stop') stopGeneration();
+    else if (action === 'toggle-citations') toggleCitations();
+    else if (action === 'copy') copyAnswer(button);
+    else if (action === 'retry') retryAnswer(button);
+    else if (action === 'feedback') submitFeedback(button, Number(button.dataset.rating));
+  });
 
   // ─── URL 参数 q 自动发送 ───────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
