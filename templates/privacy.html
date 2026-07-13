@@ -16,17 +16,17 @@
 
     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6">
       <h2 class="text-lg font-semibold text-white mb-3">IP 与身份</h2>
-      <p>本站不要求登录，不会把原始 IP 写入对话数据库。IP 只在内存中经哈希后用于频率限制；服务日志可能由部署平台按其日志策略暂时记录网络请求信息。</p>
+      <p>本站不要求登录。浏览器会保存一个 HttpOnly 匿名会话 Cookie，服务端仅保存对应令牌的哈希，用于隔离不同访客的历史记录。本站不会把原始 IP 写入对话数据库；IP 只在内存中经哈希后用于频率限制，服务日志可能由部署平台按其日志策略暂时记录网络请求信息。</p>
     </section>
 
     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6">
       <h2 class="text-lg font-semibold text-white mb-3">第三方模型服务</h2>
-      <p>问题会发送给 Embedding 服务生成检索向量；问题、最近对话历史和检索到的公开知识片段会发送给 DeepSeek 兼容模型服务生成回答。请不要输入身份证号、手机号、密码、密钥或其他敏感信息。</p>
+      <p>问题会发送给 Embedding 服务生成检索向量；问题、当前对话的滚动摘要、最近消息和检索到的公开知识片段会发送给 DeepSeek 兼容模型服务生成回答。其他访客或其他对话的内容不会作为当前对话记忆发送。请不要输入身份证号、手机号、密码、密钥或其他敏感信息。</p>
     </section>
 
     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6">
       <h2 class="text-lg font-semibold text-white mb-3">保留与删除</h2>
-      <p>匿名对话及其反馈默认保留 30 天，服务启动时会自动删除超过期限的数据。如需提前申请删除与本人相关的对话或反馈，请发送邮件至 <a href="mailto:zhuxu2825@gmail.com" class="text-sky-400 hover:text-sky-300">zhuxu2825@gmail.com</a>，并提供大致提交时间和问题内容以便定位。</p>
+      <p>匿名会话、对话及其反馈默认保留 30 天，服务启动时会自动删除超过期限的数据。清除浏览器 Cookie 后将无法继续访问原历史。如需提前申请删除与本人相关的对话或反馈，请发送邮件至 <a href="mailto:zhuxu2825@gmail.com" class="text-sky-400 hover:text-sky-300">zhuxu2825@gmail.com</a>，并提供大致提交时间和问题内容以便定位。</p>
     </section>
   </div>
 </div>
