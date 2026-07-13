@@ -5,6 +5,7 @@
 
 {% block head_extra %}
 <script src="/static/js/sse-parser.js"></script>
+<script src="/static/js/client-id.js"></script>
 <script src="/static/vendor/marked.min.js"></script>
 <script src="/static/vendor/purify.min.js"></script>
 <style nonce="{{ request.state.csp_nonce }}">
@@ -606,7 +607,7 @@
         body: JSON.stringify({
           question: text,
           conversation_id: conversationId,
-          client_message_id: crypto.randomUUID(),
+          client_message_id: createClientMessageId(),
           stream: true,
         }),
       });
