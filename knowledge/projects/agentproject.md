@@ -1,4 +1,4 @@
-# 6. 核心项目一：智扫通机器人智能客服 Agent
+# 6. 核心项目一：面向智能硬件客服场景的可治理 Agent 平台
 
 - 仓库：https://github.com/sleeping-Zack/agentproject
 - 时间：2025.10—至今

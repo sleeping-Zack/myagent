@@ -53,6 +53,13 @@ def test_project_alias_boosts_title_score():
     )
 
 
+def test_vector_similarity_is_not_artificially_reduced():
+    service = RetrievalService(None, None)
+    chunk = SimpleNamespace(title="无关键词标题", tags=[], project_id=None)
+
+    assert service._score(0.49, chunk, "你的优点是什么") == 0.49
+
+
 def test_follow_up_suggestions_are_contextual_and_bounded():
     suggestions = follow_up_suggestions("法奥机器人项目用了什么架构？")
 

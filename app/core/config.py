@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     max_question_length: int = 500
     max_context_chunks: int = 5
     retrieval_top_k: int = 10
-    min_relevance_score: float = 0.45
+    min_relevance_score: float = 0.40
 
     # 限流
     chat_daily_limit: int = 500

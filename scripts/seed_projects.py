@@ -239,8 +239,8 @@ MOOD_TRACKER_HTML = dedent("""
 PROJECTS = [
     {
         "slug": "agentproject",
-        "title": "智扫通机器人智能客服 Agent",
-        "one_liner": "面向扫地机器人故障排查与维护的 RAG + 多工具 Agent + Harness 控制层系统，重点解决 Agent 可控性问题。",
+        "title": "面向智能硬件客服场景的可治理 Agent 平台",
+        "one_liner": "面向智能硬件售后咨询、故障排查与维护场景的 RAG + 多工具 Agent + Harness 控制层平台，重点解决 Agent 可控性问题。",
         "project_type": "个人主导项目",
         "role_summary": "AI 应用开发 / Agent 开发，负责需求拆解、总体架构、RAG 混合检索、Agent Harness、工具权限、HITL、答案验证、Trace、Artifact、评测脚本、测试和 CI。",
         "tech_stack": ["Python", "FastAPI", "LangChain", "ReAct Agent", "Chroma", "BM25", "RRF", "Cross-Encoder Reranker", "MCP", "SSE", "pytest", "SQLite"],

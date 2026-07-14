@@ -37,7 +37,7 @@ def follow_up_suggestions(question: str) -> list[str]:
     q = question.lower()
     if "法奥" in q or "farino" in q or "aiflowy" in q:
         return ["这个项目中朱旭具体负责哪些模块？", "Direct 和 Agentic 路由如何实现？"]
-    if "智扫" in q or "扫地机器人" in q or "budget" in q:
+    if "智能硬件客服" in q or "可治理" in q or "agentproject" in q or "budget" in q:
         return ["混合检索的离线评测结果如何？", "BudgetManager 如何控制 Agent？"]
     if "实习" in q or "长冈" in q or "血压计" in q:
         return ["这段嵌入式经历对 Agent 开发有什么帮助？", "实习中解决过哪些稳定性问题？"]

@@ -8,7 +8,12 @@ from app.repositories.chunk_repository import ChunkRepository
 from app.services.embedding_service import EmbeddingService
 
 _PROJECT_ALIASES = {
-    "智扫通": ("智扫通", "扫地机器人", "agentproject"),
+    "面向智能硬件客服场景的可治理agent平台": (
+        "面向智能硬件客服场景的可治理agent平台",
+        "智能硬件客服",
+        "可治理agent平台",
+        "agentproject",
+    ),
     "法奥机器人": ("法奥", "法奥机器人", "farino", "aiflowy"),
     "个人招聘知识agent": ("个人agent", "招聘知识agent", "myagent", "本站"),
     "情绪分析日记": ("情绪分析", "心情助手", "moodtracker", "mood tracker"),
@@ -34,7 +39,7 @@ class RetrievalService:
         question: str,
         session: AsyncSession,
         top_k: int = 10,
-        min_score: float = 0.45,
+        min_score: float = 0.40,
     ) -> list[dict]:
         embedding = await self._embedding_svc.async_embed_query(question)
 
@@ -104,9 +109,10 @@ class RetrievalService:
         project_keywords = ["项目", "project", "经历", "实习", "开发"]
         project_match = 1.0 if chunk.project_id and any(k in q_lower for k in project_keywords) else 0.0
 
-        return (
-            vector_score * 0.75
+        return min(
+            1.0,
+            vector_score
             + title_match * 0.10
             + tag_match * 0.10
-            + project_match * 0.05
+            + project_match * 0.05,
         )

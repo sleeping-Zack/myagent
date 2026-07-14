@@ -28,7 +28,7 @@ Agent 应用开发、AI 应用开发、RAG、Python 后端。
 
 ## 项目概览
 
-1. 智扫通机器人智能客服 Agent：RAG、多工具 Agent、Harness 控制、权限、审批、答案验证、评测与可观测。
+1. 面向智能硬件客服场景的可治理 Agent 平台：RAG、多工具 Agent、Harness 控制、权限、审批、答案验证、评测与可观测。
 2. 法奥机器人智能客服平台：AIFlowy 二次开发、Direct/Agentic 路由、动态规划、QA 数据闭环、工单和私有化部署。
 3. 朱旭个人招聘知识 Agent：FastAPI、pgvector、DeepSeek、BGE、SSE 与 Docker Compose。
 4. 情绪分析日记与 AI 心情助手：jieba、TF-IDF、传统分类模型、离线评估与 Django 集成。
