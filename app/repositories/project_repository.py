@@ -16,7 +16,10 @@ class ProjectRepository:
 
     async def get_by_slug(self, session: AsyncSession, slug: str) -> Optional[Project]:
         result = await session.execute(
-            select(Project).where(Project.slug == slug)
+            select(Project).where(
+                Project.slug == slug,
+                Project.visibility == "public",
+            )
         )
         return result.scalar_one_or_none()
 

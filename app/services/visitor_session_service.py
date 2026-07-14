@@ -25,27 +25,35 @@ class VisitorSessionService:
     def _hash_token(token: str) -> str:
         return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
-    async def resolve(
+    async def get_existing(
         self, request: Request, session: AsyncSession
-    ) -> VisitorContext:
+    ) -> VisitorContext | None:
         settings = get_settings()
         token = request.cookies.get(settings.visitor_cookie_name)
+        if not token:
+            return None
         now = datetime.now(timezone.utc)
-
-        if token:
-            result = await session.execute(
-                select(VisitorSession).where(
-                    VisitorSession.token_hash == self._hash_token(token),
-                    VisitorSession.revoked_at.is_(None),
-                    VisitorSession.expires_at > now,
-                )
+        result = await session.execute(
+            select(VisitorSession).where(
+                VisitorSession.token_hash == self._hash_token(token),
+                VisitorSession.revoked_at.is_(None),
+                VisitorSession.expires_at > now,
             )
-            visitor = result.scalar_one_or_none()
-            if visitor is not None:
-                visitor.last_seen_at = now
-                await session.commit()
-                return VisitorContext(id=visitor.id)
+        )
+        visitor = result.scalar_one_or_none()
+        if visitor is None:
+            return None
+        last_seen = visitor.last_seen_at
+        if last_seen.tzinfo is None:
+            last_seen = last_seen.replace(tzinfo=timezone.utc)
+        if now - last_seen >= timedelta(hours=1):
+            visitor.last_seen_at = now
+            await session.commit()
+        return VisitorContext(id=visitor.id)
 
+    async def create(self, session: AsyncSession) -> VisitorContext:
+        settings = get_settings()
+        now = datetime.now(timezone.utc)
         new_token = secrets.token_urlsafe(32)
         visitor = VisitorSession(
             id=uuid.uuid4(),
@@ -55,6 +63,12 @@ class VisitorSessionService:
         session.add(visitor)
         await session.commit()
         return VisitorContext(id=visitor.id, new_token=new_token)
+
+    async def resolve(
+        self, request: Request, session: AsyncSession
+    ) -> VisitorContext:
+        existing = await self.get_existing(request, session)
+        return existing or await self.create(session)
 
     @staticmethod
     def set_cookie(response: Response, context: VisitorContext) -> None:

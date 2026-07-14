@@ -1,6 +1,8 @@
 import hashlib
+import ipaddress
 import re
 from datetime import date
+from fastapi import Request
 from app.core.config import settings
 
 
@@ -8,6 +10,27 @@ def hash_ip(ip: str) -> str:
     """日级别盐值哈希IP，用于限流而不存储原始IP"""
     daily_salt = str(date.today())
     return hashlib.sha256(f"{ip}{daily_salt}{settings.secret_key}".encode()).hexdigest()[:16]
+
+
+def get_client_ip(request: Request) -> str:
+    """Only trust X-Real-IP when the direct peer is a configured reverse proxy."""
+    peer = request.client.host if request.client else "unknown"
+    trusted_peer = False
+    try:
+        peer_address = ipaddress.ip_address(peer)
+        trusted_peer = any(
+            peer_address in ipaddress.ip_network(value, strict=False)
+            for value in settings.csv_values("trusted_proxy_ips")
+        )
+    except ValueError:
+        pass
+    if trusted_peer:
+        forwarded = request.headers.get("x-real-ip", "").strip()
+        try:
+            return str(ipaddress.ip_address(forwarded))
+        except ValueError:
+            pass
+    return peer
 
 
 def is_safe_question(text: str) -> bool:

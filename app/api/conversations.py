@@ -7,6 +7,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.config import get_settings
+from app.core.rate_limit import (
+    conversation_create_rate_limiter,
+    visitor_create_rate_limiter,
+)
+from app.core.security import get_client_ip, hash_ip
 from app.repositories.conversation_repository import ConversationRepository
 from app.schemas.conversation import (
     ConversationCreate,
@@ -22,10 +28,8 @@ from app.services.visitor_session_service import visitor_session_service
 router = APIRouter(prefix="/api/v1/conversations")
 
 
-async def _visitor(request: Request, response: Response, db: AsyncSession):
-    context = await visitor_session_service.resolve(request, db)
-    visitor_session_service.set_cookie(response, context)
-    return context
+async def _existing_visitor(request: Request, db: AsyncSession):
+    return await visitor_session_service.get_existing(request, db)
 
 
 @router.get("", response_model=ConversationList)
@@ -34,7 +38,9 @@ async def list_conversations(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
-    visitor = await _visitor(request, response, db)
+    visitor = await _existing_visitor(request, db)
+    if visitor is None:
+        return ConversationList(items=[])
     rows = await ConversationRepository().list_owned(db, visitor.id)
     return ConversationList(items=[
         ConversationItem(
@@ -59,7 +65,32 @@ async def create_conversation(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
-    visitor = await _visitor(request, response, db)
+    settings = get_settings()
+    client_key = hash_ip(get_client_ip(request))
+    if not conversation_create_rate_limiter.allow(
+        "new-conversation:" + client_key,
+        minute_limit=settings.conversation_create_ip_minute_limit,
+        daily_limit=settings.conversation_create_daily_limit,
+    ):
+        raise HTTPException(
+            status_code=429,
+            detail="新建对话过于频繁，请稍后再试",
+            headers={"Retry-After": "60"},
+        )
+    visitor = await _existing_visitor(request, db)
+    if visitor is None:
+        if not visitor_create_rate_limiter.allow(
+            "new-visitor:" + client_key,
+            minute_limit=settings.visitor_create_ip_minute_limit,
+            daily_limit=settings.visitor_create_daily_limit,
+        ):
+            raise HTTPException(
+                status_code=429,
+                detail="新建匿名会话过于频繁，请稍后再试",
+                headers={"Retry-After": "60"},
+            )
+        visitor = await visitor_session_service.create(db)
+        visitor_session_service.set_cookie(response, visitor)
     conversation = await ConversationRepository().create_conversation(
         db, visitor.id, body.title
     )
@@ -81,7 +112,9 @@ async def list_messages(
     limit: int = 30,
     db: AsyncSession = Depends(get_db),
 ):
-    visitor = await _visitor(request, response, db)
+    visitor = await _existing_visitor(request, db)
+    if visitor is None:
+        raise HTTPException(status_code=404, detail="会话不存在")
     repository = ConversationRepository()
     conversation = await repository.get_owned(db, conversation_id, visitor.id)
     if conversation is None:
@@ -120,7 +153,9 @@ async def rename_conversation(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
-    visitor = await _visitor(request, response, db)
+    visitor = await _existing_visitor(request, db)
+    if visitor is None:
+        raise HTTPException(status_code=404, detail="会话不存在")
     repository = ConversationRepository()
     conversation = await repository.get_owned(db, conversation_id, visitor.id)
     if conversation is None:
@@ -135,7 +170,9 @@ async def delete_conversation(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
-    visitor = await _visitor(request, response, db)
+    visitor = await _existing_visitor(request, db)
+    if visitor is None:
+        raise HTTPException(status_code=404, detail="会话不存在")
     repository = ConversationRepository()
     conversation = await repository.get_owned(db, conversation_id, visitor.id)
     if conversation is None:

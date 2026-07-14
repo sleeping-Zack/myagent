@@ -5,7 +5,7 @@ from app.repositories.conversation_repository import ConversationRepository
 from app.schemas.chat import FeedbackRequest
 from app.core.config import get_settings
 from app.core.rate_limit import feedback_rate_limiter
-from app.core.security import hash_ip
+from app.core.security import get_client_ip, hash_ip
 from app.services.visitor_session_service import visitor_session_service
 import uuid
 
@@ -21,9 +21,7 @@ async def submit_feedback(
     db: AsyncSession = Depends(get_db),
 ):
     settings = get_settings()
-    client_ip = request.headers.get("x-real-ip") or (
-        request.client.host if request.client else "unknown"
-    )
+    client_ip = get_client_ip(request)
     if not feedback_rate_limiter.allow(
         hash_ip(client_ip),
         minute_limit=settings.feedback_ip_minute_limit,
@@ -39,8 +37,9 @@ async def submit_feedback(
     except ValueError:
         raise HTTPException(status_code=400, detail="无效的 message_id")
     repo = ConversationRepository()
-    visitor = await visitor_session_service.resolve(request, db)
-    visitor_session_service.set_cookie(response, visitor)
+    visitor = await visitor_session_service.get_existing(request, db)
+    if visitor is None:
+        raise HTTPException(status_code=404, detail="消息不属于当前会话")
     if not await repo.message_belongs_to_conversation(
         db, mid, body.conversation_id, visitor.id
     ):

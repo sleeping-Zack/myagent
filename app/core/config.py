@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
-import secrets
+from urllib.parse import urlparse
 
 
 class Settings(BaseSettings):
@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_name: str = "朱旭个人Agent"
     site_url: str = "http://47.116.25.89"
-    secret_key: str = secrets.token_urlsafe(32)
+    allowed_hosts: str = ""
+    trusted_proxy_ips: str = "127.0.0.1,::1"
+    secret_key: str = ""
     debug: bool = False
 
     # 数据库
@@ -43,6 +45,11 @@ class Settings(BaseSettings):
     chat_visitor_minute_limit: int = 5
     feedback_daily_limit: int = 500
     feedback_ip_minute_limit: int = 10
+    visitor_create_ip_minute_limit: int = 10
+    visitor_create_daily_limit: int = 500
+    conversation_create_ip_minute_limit: int = 10
+    conversation_create_daily_limit: int = 200
+    admin_failed_login_ip_minute_limit: int = 5
 
     # 匿名对话保留期限；设为 None 可关闭自动清理。
     conversation_retention_days: Optional[int] = 30
@@ -55,12 +62,44 @@ class Settings(BaseSettings):
     # 管理端
     admin_username: str = "admin"
     admin_password: str = ""
+    admin_allowed_ips: str = ""
 
     # 日志
     log_level: str = "INFO"
     save_raw_ip: bool = False
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+
+    def csv_values(self, field_name: str) -> list[str]:
+        return [
+            value.strip()
+            for value in getattr(self, field_name).split(",")
+            if value.strip()
+        ]
+
+    def effective_allowed_hosts(self) -> list[str]:
+        configured = self.csv_values("allowed_hosts")
+        hostname = urlparse(self.site_url).hostname
+        hosts = configured or ([hostname] if hostname else [])
+        hosts.extend(["localhost", "127.0.0.1"])
+        if self.app_env != "production":
+            hosts.append("testserver")
+        return list(dict.fromkeys(hosts))
+
+    def validate_production(self) -> None:
+        if self.app_env != "production":
+            return
+        errors: list[str] = []
+        if urlparse(self.site_url).scheme != "https":
+            errors.append("SITE_URL must use https in production")
+        if len(self.secret_key) < 32 or self.secret_key == "change_this_secret_key_in_production":
+            errors.append("SECRET_KEY must be a production secret of at least 32 characters")
+        if ":password@" in self.database_url:
+            errors.append("DATABASE_URL still uses the default password")
+        if not self.effective_allowed_hosts():
+            errors.append("ALLOWED_HOSTS or a valid SITE_URL is required")
+        if errors:
+            raise RuntimeError("Unsafe production configuration: " + "; ".join(errors))
 
 
 settings = Settings()

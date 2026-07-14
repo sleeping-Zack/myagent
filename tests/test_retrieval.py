@@ -4,6 +4,7 @@ RetrievalService 单元测试。
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock
+from app.repositories.project_repository import ProjectRepository
 from app.services.retrieval_service import RetrievalService
 
 
@@ -87,3 +88,16 @@ def test_score_calculation(retrieval_svc, mock_chunk_repo):
     assert len(results) > 0
     for r in results:
         assert 0.0 <= r["score"] <= 1.0, f"score {r['score']} 超出 [0,1] 范围"
+
+
+@pytest.mark.asyncio
+async def test_public_project_detail_query_enforces_visibility():
+    session = AsyncMock()
+    result = MagicMock()
+    result.scalar_one_or_none.return_value = None
+    session.execute.return_value = result
+
+    await ProjectRepository().get_by_slug(session, "private-project")
+
+    statement = session.execute.await_args.args[0]
+    assert "projects.visibility" in str(statement)

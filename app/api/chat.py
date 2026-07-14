@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.rate_limit import chat_rate_limiter
-from app.core.security import is_safe_question
+from app.core.rate_limit import chat_rate_limiter, visitor_create_rate_limiter
+from app.core.security import get_client_ip, hash_ip, is_safe_question
 from app.repositories.chunk_repository import ChunkRepository
 from app.repositories.conversation_repository import ConversationRepository
 from app.schemas.chat import ChatRequest
@@ -53,10 +53,20 @@ async def chat(
             yield _sse("done", {"message_id": "", "suggestions": []})
         return StreamingResponse(unsafe_error(), media_type="text/event-stream")
 
-    client_ip = request.headers.get("x-real-ip") or (
-        request.client.host if request.client else "unknown"
-    )
-    visitor = await visitor_session_service.resolve(request, db)
+    client_ip = get_client_ip(request)
+    visitor = await visitor_session_service.get_existing(request, db)
+    if visitor is None:
+        if not visitor_create_rate_limiter.allow(
+            "new-visitor:" + hash_ip(client_ip),
+            minute_limit=settings.visitor_create_ip_minute_limit,
+            daily_limit=settings.visitor_create_daily_limit,
+        ):
+            return JSONResponse(
+                {"error": "新建匿名会话过于频繁，请稍后再试"},
+                status_code=429,
+                headers={"Retry-After": "60"},
+            )
+        visitor = await visitor_session_service.create(db)
     ip_key = "ip:" + hashlib.sha256(client_ip.encode("utf-8")).hexdigest()
     visitor_key = f"visitor:{visitor.id}"
     if not chat_rate_limiter.allow(

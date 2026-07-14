@@ -10,6 +10,7 @@ class ChatRateLimiter:
         self._minute_requests: dict[str, deque[float]] = defaultdict(deque)
         self._daily_count = 0
         self._daily_date = date.min
+        self._last_cleanup = 0.0
 
     def allow(
         self,
@@ -23,6 +24,15 @@ class ChatRateLimiter:
         timestamp = now.timestamp()
 
         with self._lock:
+            if timestamp - self._last_cleanup >= 60:
+                cutoff = timestamp - 60
+                for key, key_requests in list(self._minute_requests.items()):
+                    while key_requests and key_requests[0] <= cutoff:
+                        key_requests.popleft()
+                    if not key_requests:
+                        del self._minute_requests[key]
+                self._last_cleanup = timestamp
+
             if self._daily_date != now.date():
                 self._daily_date = now.date()
                 self._daily_count = 0
@@ -44,3 +54,6 @@ class ChatRateLimiter:
 
 chat_rate_limiter = ChatRateLimiter()
 feedback_rate_limiter = ChatRateLimiter()
+visitor_create_rate_limiter = ChatRateLimiter()
+conversation_create_rate_limiter = ChatRateLimiter()
+admin_auth_rate_limiter = ChatRateLimiter()
