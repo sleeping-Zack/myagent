@@ -5,8 +5,8 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-  <h1 class="text-3xl font-bold text-white">RAG 检索评测</h1>
-  <p class="text-slate-400 mt-3 max-w-3xl">使用冻结问题集检查 Top 5 检索结果能否命中至少一个预先标注的可接受知识来源。每题只有一个证据命中要求，因此 Recall@5 按命中问题数占比计算。该结果只衡量本站的小规模离线检索，不代表生成答案准确率、线上流量或商业效果。</p>
+  <h1 class="text-3xl font-bold text-white">RAG 离线检索评测（18 题）</h1>
+  <p class="text-slate-400 mt-3 max-w-3xl">使用冻结题集检查每个问题的 Top 5 结果是否至少命中一个预先标注的可接受来源，命中问题数占比记为 Hit Rate@5。题集规模较小且来源标签由项目维护者标注；结果只衡量离线检索排序，不代表生成答案准确率、线上流量或商业效果。</p>
 
   {% if result %}
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
@@ -15,8 +15,8 @@
       <p class="text-3xl font-bold text-white mt-2">{{ result.sample_size }}</p>
     </div>
     <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
-      <p class="text-xs text-slate-500">Recall@5</p>
-      <p class="text-3xl font-bold text-sky-400 mt-2">{{ "%.1f" | format(result.metrics.recall_at_5 * 100) }}%</p>
+      <p class="text-xs text-slate-500">Hit Rate@5</p>
+      <p class="text-3xl font-bold text-sky-400 mt-2">{{ "%.1f" | format(result.metrics.hit_rate_at_5 * 100) }}%</p>
     </div>
     <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
       <p class="text-xs text-slate-500">P95 检索延迟</p>
@@ -37,8 +37,8 @@
             <p class="text-xs text-slate-500">{{ case.category }} · {{ case.id }}</p>
             <p class="text-sm text-slate-200 mt-1">{{ case.question }}</p>
           </div>
-          <span class="shrink-0 text-xs px-2 py-1 rounded {% if case.recall_at_5 == 1 %}bg-emerald-500/10 text-emerald-400{% else %}bg-amber-500/10 text-amber-400{% endif %}">
-            Recall {{ "%.2f" | format(case.recall_at_5) }}
+          <span class="shrink-0 text-xs px-2 py-1 rounded {% if case.hit_at_5 == 1 %}bg-emerald-500/10 text-emerald-400{% else %}bg-amber-500/10 text-amber-400{% endif %}">
+            Hit {{ "%.0f" | format(case.hit_at_5) }}
           </span>
         </div>
         <p class="text-xs text-slate-500 mt-3">期望来源：{{ case.expected_sources | join('、') }}</p>

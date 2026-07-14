@@ -64,3 +64,15 @@ def test_internship_evidence_can_be_identified_from_title_or_content(svc):
     ]
 
     assert svc.has_sufficient_evidence(chunks, question="你有什么实习经历") is True
+
+
+def test_internship_claim_is_rejected_without_internship_evidence(svc):
+    chunks = [_chunk(score=0.72, content="负责个人项目的后端开发")]
+
+    assert svc.has_sufficient_evidence(chunks, question="朱旭在字节跳动实习过吗") is False
+
+
+def test_numeric_claim_is_rejected_without_numeric_evidence(svc):
+    chunks = [_chunk(score=0.72, content="知识库没有记录该成绩")]
+
+    assert svc.has_sufficient_evidence(chunks, question="朱旭的 GPA 是多少") is False

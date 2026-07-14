@@ -47,7 +47,7 @@ def validate_admin_credentials(
     )
 
 
-def require_admin(
+async def require_admin(
     request: Request,
     credentials: HTTPBasicCredentials | None = Depends(security),
     settings: Settings = Depends(get_settings),
@@ -59,7 +59,7 @@ def require_admin(
 
     valid = validate_admin_credentials(credentials, settings)
     if not valid:
-        if not admin_auth_rate_limiter.allow(
+        if not await admin_auth_rate_limiter.allow(
             "admin-auth:" + hash_ip(client_ip),
             minute_limit=settings.admin_failed_login_ip_minute_limit,
             daily_limit=settings.admin_failed_login_ip_minute_limit,

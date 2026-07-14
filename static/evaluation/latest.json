@@ -1,12 +1,12 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-07-13T05:38:11.555067+00:00",
+  "schema_version": 2,
+  "generated_at": "2026-07-14T14:38:10.028266+00:00",
   "dataset": "rag_golden_set.json",
   "sample_size": 18,
   "metrics": {
-    "recall_at_5": 1.0,
-    "average_retrieval_latency_ms": 118.1,
-    "p95_retrieval_latency_ms": 258.8
+    "hit_rate_at_5": 1.0,
+    "average_retrieval_latency_ms": 119.8,
+    "p95_retrieval_latency_ms": 305.2
   },
   "cases": [
     {
@@ -28,8 +28,8 @@
         "00_master_profile.md",
         "01_public_profile.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 258.8
+      "hit_at_5": 1.0,
+      "latency_ms": 305.2
     },
     {
       "id": "profile-02",
@@ -50,8 +50,8 @@
         "00_master_profile.md",
         "01_public_profile.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 117.3
+      "hit_at_5": 1.0,
+      "latency_ms": 101.5
     },
     {
       "id": "profile-03",
@@ -70,8 +70,8 @@
       "matched_sources": [
         "01_public_profile.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 112.3
+      "hit_at_5": 1.0,
+      "latency_ms": 105.4
     },
     {
       "id": "intern-01",
@@ -87,14 +87,14 @@
         "06_hr_interview_qa.md",
         "06_hr_interview_qa.md",
         "00_master_profile.md",
-        "06_hr_interview_qa.md"
+        "myagent.md"
       ],
       "matched_sources": [
         "00_master_profile.md",
         "06_hr_interview_qa.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 121.8
+      "hit_at_5": 1.0,
+      "latency_ms": 103.6
     },
     {
       "id": "intern-02",
@@ -113,8 +113,8 @@
       "matched_sources": [
         "changgang_embedded_internship.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 106.3
+      "hit_at_5": 1.0,
+      "latency_ms": 108.3
     },
     {
       "id": "agent-01",
@@ -126,17 +126,16 @@
       ],
       "retrieved_sources": [
         "agentprojectREADME.md",
+        "agentprojectREADME.md",
         "agentproject.md",
-        "agentprojectREADME.md",
-        "agentprojectREADME.md",
         "agentproject.md"
       ],
       "matched_sources": [
         "agentproject.md",
         "agentprojectREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 103.3
+      "hit_at_5": 1.0,
+      "latency_ms": 122.2
     },
     {
       "id": "agent-02",
@@ -148,17 +147,16 @@
       ],
       "retrieved_sources": [
         "agentprojectREADME.md",
-        "07_technical_interview_qa.md",
-        "agentproject.md",
         "agentprojectREADME.md",
-        "agentprojectREADME.md"
+        "agentproject.md",
+        "07_technical_interview_qa.md"
       ],
       "matched_sources": [
         "agentproject.md",
         "agentprojectREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 114.6
+      "hit_at_5": 1.0,
+      "latency_ms": 109.5
     },
     {
       "id": "agent-03",
@@ -172,15 +170,14 @@
         "07_technical_interview_qa.md",
         "agentproject.md",
         "agentprojectREADME.md",
-        "agentprojectREADME.md",
         "agentprojectREADME.md"
       ],
       "matched_sources": [
         "agentproject.md",
         "agentprojectREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 100.7
+      "hit_at_5": 1.0,
+      "latency_ms": 108.2
     },
     {
       "id": "agent-04",
@@ -192,17 +189,16 @@
       ],
       "retrieved_sources": [
         "agentproject.md",
-        "agentproject.md",
-        "agentproject.md",
         "agentprojectREADME.md",
-        "07_technical_interview_qa.md"
+        "agentproject.md",
+        "agentprojectREADME.md"
       ],
       "matched_sources": [
         "agentproject.md",
         "agentprojectREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 110.6
+      "hit_at_5": 1.0,
+      "latency_ms": 109.0
     },
     {
       "id": "farino-01",
@@ -216,15 +212,14 @@
         "farinoREADME.md",
         "farino.md",
         "farinoREADME.md",
-        "farino.md",
         "farino.md"
       ],
       "matched_sources": [
         "farino.md",
         "farinoREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 115.7
+      "hit_at_5": 1.0,
+      "latency_ms": 106.2
     },
     {
       "id": "farino-02",
@@ -236,17 +231,17 @@
       ],
       "retrieved_sources": [
         "07_technical_interview_qa.md",
+        "farino.md",
         "farinoREADME.md",
         "farino.md",
-        "07_technical_interview_qa.md",
-        "farinoREADME.md"
+        "07_technical_interview_qa.md"
       ],
       "matched_sources": [
         "farino.md",
         "farinoREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 104.4
+      "hit_at_5": 1.0,
+      "latency_ms": 112.1
     },
     {
       "id": "farino-03",
@@ -260,15 +255,14 @@
         "farino.md",
         "farinoREADME.md",
         "farino.md",
-        "farino.md",
         "farinoREADME.md"
       ],
       "matched_sources": [
         "farino.md",
         "farinoREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 109.0
+      "hit_at_5": 1.0,
+      "latency_ms": 112.3
     },
     {
       "id": "myagent-01",
@@ -281,15 +275,15 @@
       "retrieved_sources": [
         "myagent.md",
         "myagent.md",
-        "myagent.md",
+        "10_agent_answer_policy.md",
         "agentprojectREADME.md",
-        "05_experience_timeline.md"
+        "01_public_profile.md"
       ],
       "matched_sources": [
         "myagent.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 117.3
+      "hit_at_5": 1.0,
+      "latency_ms": 109.4
     },
     {
       "id": "myagent-02",
@@ -301,16 +295,16 @@
       ],
       "retrieved_sources": [
         "myagent.md",
+        "myagent.md",
         "07_technical_interview_qa.md",
         "README.md",
-        "07_technical_interview_qa.md",
         "07_technical_interview_qa.md"
       ],
       "matched_sources": [
         "myagent.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 115.9
+      "hit_at_5": 1.0,
+      "latency_ms": 108.6
     },
     {
       "id": "mood-01",
@@ -323,16 +317,15 @@
       "retrieved_sources": [
         "mood_tracker.md",
         "mood_tracker.md",
-        "mood_tracker.md",
         "mood_trackerREADME.md",
-        "mood_tracker.md"
+        "mood_trackerREADME.md"
       ],
       "matched_sources": [
         "mood_tracker.md",
         "mood_trackerREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 103.2
+      "hit_at_5": 1.0,
+      "latency_ms": 113.1
     },
     {
       "id": "mood-02",
@@ -346,15 +339,14 @@
         "mood_trackerREADME.md",
         "mood_trackerREADME.md",
         "mood_tracker.md",
-        "mood_trackerREADME.md",
-        "mood_trackerREADME.md"
+        "mood_tracker.md"
       ],
       "matched_sources": [
         "mood_tracker.md",
         "mood_trackerREADME.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 104.3
+      "hit_at_5": 1.0,
+      "latency_ms": 111.6
     },
     {
       "id": "boundary-01",
@@ -368,15 +360,16 @@
       "retrieved_sources": [
         "06_hr_interview_qa.md",
         "06_hr_interview_qa.md",
-        "06_hr_interview_qa.md",
         "README.md",
-        "06_hr_interview_qa.md"
+        "00_master_profile.md",
+        "05_experience_timeline.md"
       ],
       "matched_sources": [
+        "00_master_profile.md",
         "06_hr_interview_qa.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 102.4
+      "hit_at_5": 1.0,
+      "latency_ms": 99.8
     },
     {
       "id": "boundary-02",
@@ -399,8 +392,8 @@
         "00_master_profile.md",
         "01_public_profile.md"
       ],
-      "recall_at_5": 1.0,
-      "latency_ms": 107.4
+      "hit_at_5": 1.0,
+      "latency_ms": 109.8
     }
   ]
 }

@@ -67,7 +67,7 @@ async def create_conversation(
 ):
     settings = get_settings()
     client_key = hash_ip(get_client_ip(request))
-    if not conversation_create_rate_limiter.allow(
+    if not await conversation_create_rate_limiter.allow(
         "new-conversation:" + client_key,
         minute_limit=settings.conversation_create_ip_minute_limit,
         daily_limit=settings.conversation_create_daily_limit,
@@ -79,7 +79,7 @@ async def create_conversation(
         )
     visitor = await _existing_visitor(request, db)
     if visitor is None:
-        if not visitor_create_rate_limiter.allow(
+        if not await visitor_create_rate_limiter.allow(
             "new-visitor:" + client_key,
             minute_limit=settings.visitor_create_ip_minute_limit,
             daily_limit=settings.visitor_create_daily_limit,

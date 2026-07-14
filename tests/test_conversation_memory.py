@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock
 import asyncio
 import uuid
 
+import pytest
 from starlette.responses import Response
 
 from app.core.rate_limit import ChatRateLimiter
@@ -43,12 +44,13 @@ def test_memory_summarizes_old_messages_and_keeps_recent(monkeypatch):
     assert repository.update_memory.await_args.args[-1] == 2
 
 
-def test_ip_guard_can_skip_global_daily_budget():
+@pytest.mark.asyncio
+async def test_ip_guard_can_skip_global_daily_budget():
     limiter = ChatRateLimiter()
 
-    assert limiter.allow("ip:a", 30, 1, count_daily=False)
-    assert limiter.allow("visitor:a", 5, 1)
-    assert not limiter.allow("visitor:b", 5, 1)
+    assert await limiter.allow("ip:a", 30, 1, count_daily=False)
+    assert await limiter.allow("visitor:a", 5, 1)
+    assert not await limiter.allow("visitor:b", 5, 1)
 
 
 def test_visitor_cookie_is_httponly_and_token_hash_is_one_way(monkeypatch):

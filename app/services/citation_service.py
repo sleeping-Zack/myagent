@@ -34,7 +34,7 @@ class CitationService:
             return False
 
         # 问题含数字/排名 → 必须有含数字的证据
-        if re.search(r"\d|排名|第[一二三四五六七八九十\d]|top\s*\d", question, re.IGNORECASE):
+        if re.search(r"\d|排名|绩点|gpa|第[一二三四五六七八九十\d]|top\s*\d", question, re.IGNORECASE):
             has_numeric = any(
                 re.search(r"\d", c.get("content") or "") for c in chunks
             )

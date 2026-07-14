@@ -20,6 +20,7 @@ def _make_chunk(
     content="这是一段测试内容",
     tags=None,
     project_id=None,
+    document_id=None,
 ):
     chunk = MagicMock()
     chunk.id = chunk_id
@@ -28,7 +29,7 @@ def _make_chunk(
     chunk.content = content
     chunk.tags = tags or []
     chunk.project_id = project_id
-    chunk.document_id = None
+    chunk.document_id = document_id
     return chunk
 
 
@@ -112,6 +113,29 @@ def test_retrieval_score_uses_real_cosine_distance(retrieval_svc, mock_chunk_rep
     assert scores["close"] == pytest.approx(1.0 - 0.08)
     assert scores["distant"] == pytest.approx(1.0 - 0.42)
     assert scores["close"] > scores["distant"]
+
+
+def test_retrieval_limits_each_document_to_two_chunks(retrieval_svc, mock_chunk_repo):
+    chunks = [
+        _make_chunk(chunk_id=f"same-{i}", document_id="document-1")
+        for i in range(3)
+    ]
+    chunks.append(_make_chunk(chunk_id="other", document_id="document-2"))
+    mock_chunk_repo.search_similar.return_value = [
+        (chunk, 0.05 + index * 0.01) for index, chunk in enumerate(chunks)
+    ]
+    session = AsyncMock()
+    session.execute.return_value = MagicMock()
+    session.execute.return_value.__iter__.return_value = []
+
+    import asyncio
+    results = asyncio.run(retrieval_svc.retrieve(
+        question="测试问题",
+        session=session,
+        min_score=0.0,
+    ))
+
+    assert [result["chunk_id"] for result in results] == ["same-0", "same-1", "other"]
 
 
 @pytest.mark.asyncio
