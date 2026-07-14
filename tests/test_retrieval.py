@@ -4,6 +4,7 @@ RetrievalService 单元测试。
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock
+from app.repositories.chunk_repository import ChunkRepository
 from app.repositories.project_repository import ProjectRepository
 from app.services.retrieval_service import RetrievalService
 
@@ -75,7 +76,9 @@ def test_score_calculation(retrieval_svc, mock_chunk_repo):
         _make_chunk(chunk_id=f"c{i}", title=f"标题{i}", content=f"内容{i}")
         for i in range(5)
     ]
-    mock_chunk_repo.search_similar.return_value = chunks
+    mock_chunk_repo.search_similar.return_value = [
+        (chunk, 0.1 + i * 0.1) for i, chunk in enumerate(chunks)
+    ]
     mock_session = AsyncMock()
 
     import asyncio
@@ -88,6 +91,47 @@ def test_score_calculation(retrieval_svc, mock_chunk_repo):
     assert len(results) > 0
     for r in results:
         assert 0.0 <= r["score"] <= 1.0, f"score {r['score']} 超出 [0,1] 范围"
+
+
+def test_retrieval_score_uses_real_cosine_distance(retrieval_svc, mock_chunk_repo):
+    close_chunk = _make_chunk(chunk_id="close", title="相同标题")
+    distant_chunk = _make_chunk(chunk_id="distant", title="相同标题")
+    mock_chunk_repo.search_similar.return_value = [
+        (close_chunk, 0.08),
+        (distant_chunk, 0.42),
+    ]
+
+    import asyncio
+    results = asyncio.run(retrieval_svc.retrieve(
+        question="没有标题或标签加分的问题",
+        session=AsyncMock(),
+        min_score=0.0,
+    ))
+
+    scores = {result["chunk_id"]: result["score"] for result in results}
+    assert scores["close"] == pytest.approx((1.0 - 0.08) * 0.75)
+    assert scores["distant"] == pytest.approx((1.0 - 0.42) * 0.75)
+    assert scores["close"] > scores["distant"]
+
+
+@pytest.mark.asyncio
+async def test_chunk_repository_returns_cosine_distance():
+    session = AsyncMock()
+    query_result = MagicMock()
+    chunk = _make_chunk()
+    query_result.all.return_value = [(chunk, 0.1234)]
+    session.execute.return_value = query_result
+
+    rows = await ChunkRepository().search_similar(
+        session=session,
+        embedding=[0.1] * 1024,
+        top_k=1,
+    )
+
+    assert rows == [(chunk, 0.1234)]
+    statement = str(session.execute.await_args.args[0])
+    assert "<=>" in statement
+    assert "embedding IS NOT NULL" in statement
 
 
 @pytest.mark.asyncio

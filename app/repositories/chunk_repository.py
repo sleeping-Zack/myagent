@@ -16,14 +16,21 @@ class ChunkRepository:
         top_k: int = 10,
         visibility: str = "public",
         confidence_levels: Optional[list[str]] = None,
-    ) -> list[DocumentChunk]:
+    ) -> list[tuple[DocumentChunk, float]]:
         query_vec = cast(embedding, Vector(settings.embedding_dimensions))
-        stmt = select(DocumentChunk).where(DocumentChunk.visibility == visibility)
+        cosine_distance = DocumentChunk.embedding.op("<=>")(query_vec)
+        stmt = select(
+            DocumentChunk,
+            cosine_distance.label("cosine_distance"),
+        ).where(
+            DocumentChunk.visibility == visibility,
+            DocumentChunk.embedding.is_not(None),
+        )
         if confidence_levels:
             stmt = stmt.where(DocumentChunk.confidence.in_(confidence_levels))
-        stmt = stmt.order_by(DocumentChunk.embedding.op("<=>")(query_vec)).limit(top_k)
+        stmt = stmt.order_by(cosine_distance).limit(top_k)
         result = await session.execute(stmt)
-        return list(result.scalars().all())
+        return [(chunk, float(distance)) for chunk, distance in result.all()]
 
     async def upsert_for_document(
         self, session: AsyncSession, document_id: uuid.UUID, chunks: list[dict]
