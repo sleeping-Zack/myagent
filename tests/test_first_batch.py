@@ -15,24 +15,26 @@ def test_conversation_id_must_be_uuid():
         ChatRequest(question="继续介绍", conversation_id="not-a-uuid")
 
 
-def test_rate_limiter_enforces_minute_limit():
+@pytest.mark.asyncio
+async def test_rate_limiter_enforces_minute_limit():
     limiter = ChatRateLimiter()
     now = datetime(2026, 7, 13, tzinfo=timezone.utc)
 
-    assert limiter.allow("client", 2, 10, now)
-    assert limiter.allow("client", 2, 10, now + timedelta(seconds=1))
-    assert not limiter.allow("client", 2, 10, now + timedelta(seconds=2))
-    assert limiter.allow("client", 2, 10, now + timedelta(seconds=61))
+    assert await limiter.allow("client", 2, 10, now)
+    assert await limiter.allow("client", 2, 10, now + timedelta(seconds=1))
+    assert not await limiter.allow("client", 2, 10, now + timedelta(seconds=2))
+    assert await limiter.allow("client", 2, 10, now + timedelta(seconds=61))
 
 
-def test_rate_limiter_enforces_daily_limit():
+@pytest.mark.asyncio
+async def test_rate_limiter_enforces_daily_limit():
     limiter = ChatRateLimiter()
     now = datetime(2026, 7, 13, tzinfo=timezone.utc)
 
-    assert limiter.allow("client-a", 5, 2, now)
-    assert limiter.allow("client-b", 5, 2, now)
-    assert not limiter.allow("client-c", 5, 2, now)
-    assert limiter.allow("client-c", 5, 2, now + timedelta(days=1))
+    assert await limiter.allow("client-a", 5, 2, now)
+    assert await limiter.allow("client-b", 5, 2, now)
+    assert not await limiter.allow("client-c", 5, 2, now)
+    assert await limiter.allow("client-c", 5, 2, now + timedelta(days=1))
 
 
 def test_citation_exposes_ranking_score_not_relevance_percentage():

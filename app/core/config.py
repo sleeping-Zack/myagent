@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     # 数据库
     database_url: str = "postgresql+asyncpg://personal_agent:password@localhost:5432/personal_agent"
+    redis_url: str = ""
 
     # DeepSeek
     deepseek_api_key: str = ""

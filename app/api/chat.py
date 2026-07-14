@@ -58,7 +58,7 @@ async def chat(
     client_ip = get_client_ip(request)
     visitor = await visitor_session_service.get_existing(request, db)
     if visitor is None:
-        if not visitor_create_rate_limiter.allow(
+        if not await visitor_create_rate_limiter.allow(
             "new-visitor:" + hash_ip(client_ip),
             minute_limit=settings.visitor_create_ip_minute_limit,
             daily_limit=settings.visitor_create_daily_limit,
@@ -71,12 +71,12 @@ async def chat(
         visitor = await visitor_session_service.create(db)
     ip_key = "ip:" + hashlib.sha256(client_ip.encode("utf-8")).hexdigest()
     visitor_key = f"visitor:{visitor.id}"
-    if not chat_rate_limiter.allow(
+    if not await chat_rate_limiter.allow(
         ip_key,
         minute_limit=settings.chat_ip_minute_limit,
         daily_limit=settings.chat_daily_limit,
         count_daily=False,
-    ) or not chat_rate_limiter.allow(
+    ) or not await chat_rate_limiter.allow(
         visitor_key,
         minute_limit=settings.chat_visitor_minute_limit,
         daily_limit=settings.chat_daily_limit,

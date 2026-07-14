@@ -91,6 +91,10 @@
       </div>
 
       {% if architecture_image %}
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold text-white">系统架构</h2>
+        <span class="text-xs text-slate-500">先看图，再看实现细节</span>
+      </div>
       <figure class="mb-8 overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
         <img src="{{ architecture_image }}" alt="{{ project.title }} 架构示意图" class="w-full" />
         <figcaption class="px-4 py-2 text-xs text-slate-500">架构示意图，非产品运行截图</figcaption>

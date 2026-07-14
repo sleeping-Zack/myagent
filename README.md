@@ -65,12 +65,15 @@ docker compose exec web python scripts/ingest_knowledge.py
 docker compose exec web python scripts/evaluate_rag.py
 ```
 
-结果会写入 `static/evaluation/latest.json`，并展示在 `/evaluation` 页面。Recall@5 的口径是每个问题的 Top 5 结果至少命中一个预先标注的可接受来源。
+结果会写入 `static/evaluation/latest.json`，并展示在 `/evaluation` 页面。Hit Rate@5 的口径是每个问题的 Top 5 结果至少命中一个预先标注的可接受来源；它不等同于生成答案准确率。
 
 ## 健康检查
 
 - `/health/live`：进程存活检查。
 - `/health/ready`：数据库、Embedding 配置和模型配置就绪检查；仅返回总体状态。
+
+宝塔计划任务可定时运行 `sh deploy/check_site.sh` 做可用性检查，运行
+`sh deploy/backup_postgres.sh` 生成 PostgreSQL 压缩备份并保留 7 天。告警通知仍需在宝塔计划任务中绑定邮箱或企业微信；独立域名需要在购买后再配置 DNS 与证书。
 
 ## 目录结构
 

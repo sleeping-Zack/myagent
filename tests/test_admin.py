@@ -39,7 +39,8 @@ def test_admin_stays_closed_without_password():
     assert error.value.status_code == 503
 
 
-def test_admin_failed_logins_are_rate_limited():
+@pytest.mark.asyncio
+async def test_admin_failed_logins_are_rate_limited():
     request = Request({
         "type": "http",
         "headers": [],
@@ -55,11 +56,11 @@ def test_admin_failed_logins_are_rate_limited():
 
     for _ in range(5):
         with pytest.raises(HTTPException) as error:
-            require_admin(request, wrong, settings)
+            await require_admin(request, wrong, settings)
         assert error.value.status_code == 401
 
     with pytest.raises(HTTPException) as error:
-        require_admin(request, wrong, settings)
+        await require_admin(request, wrong, settings)
     assert error.value.status_code == 429
 
 

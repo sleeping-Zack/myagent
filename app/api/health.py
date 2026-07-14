@@ -5,6 +5,7 @@ from sqlalchemy import text
 from app.core.database import get_db
 from app.services.embedding_service import EmbeddingService, get_embedding_service
 from app.services.deepseek_service import DeepSeekService, get_deepseek_service
+from app.core.rate_limit import chat_rate_limiter
 
 router = APIRouter()
 
@@ -30,6 +31,7 @@ async def ready(
         ready_status
         and embedding.is_configured()
         and model.is_configured()
+        and await chat_rate_limiter.is_healthy()
     )
 
     payload = {"status": "ok" if ready_status else "not_ready"}

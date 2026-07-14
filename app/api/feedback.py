@@ -22,7 +22,7 @@ async def submit_feedback(
 ):
     settings = get_settings()
     client_ip = get_client_ip(request)
-    if not feedback_rate_limiter.allow(
+    if not await feedback_rate_limiter.allow(
         hash_ip(client_ip),
         minute_limit=settings.feedback_ip_minute_limit,
         daily_limit=settings.feedback_daily_limit,

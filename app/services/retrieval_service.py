@@ -46,7 +46,7 @@ class RetrievalService:
         raw_chunks = await self._chunk_repo.search_similar(
             session=session,
             embedding=embedding,
-            top_k=top_k,
+            top_k=top_k * 2,
             visibility="public",
             confidence_levels=["confirmed", "self_reported"],
         )
@@ -71,6 +71,7 @@ class RetrievalService:
             if final_score >= min_score:
                 results.append({
                     "chunk_id": str(chunk.id),
+                    "document_id": str(chunk.document_id) if chunk.document_id else None,
                     "title": chunk.title,
                     "section": chunk.section,
                     "content": chunk.content,
@@ -81,7 +82,17 @@ class RetrievalService:
                 })
 
         results.sort(key=lambda x: x["score"], reverse=True)
-        return results
+        deduplicated: list[dict] = []
+        document_counts: dict[str, int] = {}
+        for result in results:
+            document_id = result.pop("document_id")
+            if document_id:
+                count = document_counts.get(document_id, 0)
+                if count >= 2:
+                    continue
+                document_counts[document_id] = count + 1
+            deduplicated.append(result)
+        return deduplicated[:top_k]
 
     def _score(self, vector_score: float, chunk: Any, question: str) -> float:
         q_lower = question.lower()

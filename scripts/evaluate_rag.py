@@ -39,7 +39,7 @@ async def evaluate(golden_path: Path, output_path: Path) -> dict:
             sources = [chunk.get("source_name") for chunk in chunks]
             expected = case["expected_sources"]
             hits = sorted(set(expected).intersection(source for source in sources if source))
-            recall = 1.0 if hits else 0.0
+            hit_rate = 1.0 if hits else 0.0
             results.append({
                 "id": case["id"],
                 "category": case["category"],
@@ -47,20 +47,20 @@ async def evaluate(golden_path: Path, output_path: Path) -> dict:
                 "expected_sources": expected,
                 "retrieved_sources": sources,
                 "matched_sources": hits,
-                "recall_at_5": round(recall, 4),
+                "hit_at_5": round(hit_rate, 4),
                 "latency_ms": latency_ms,
             })
 
     latencies = sorted(item["latency_ms"] for item in results)
     p95_index = max(0, math.ceil(len(latencies) * 0.95) - 1)
     summary = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "dataset": golden_path.name,
         "sample_size": len(results),
         "metrics": {
-            "recall_at_5": round(
-                sum(item["recall_at_5"] for item in results) / len(results), 4
+            "hit_rate_at_5": round(
+                sum(item["hit_at_5"] for item in results) / len(results), 4
             ),
             "average_retrieval_latency_ms": round(sum(latencies) / len(latencies), 1),
             "p95_retrieval_latency_ms": latencies[p95_index],
