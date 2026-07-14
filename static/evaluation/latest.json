@@ -118,8 +118,8 @@
     },
     {
       "id": "agent-01",
-      "category": "智扫通项目",
-      "question": "智扫通机器人客服 Agent 的整体架构是什么？",
+      "category": "面向智能硬件客服场景的可治理 Agent 平台",
+      "question": "面向智能硬件客服场景的可治理 Agent 平台整体架构是什么？",
       "expected_sources": [
         "agentproject.md",
         "agentprojectREADME.md"
@@ -140,8 +140,8 @@
     },
     {
       "id": "agent-02",
-      "category": "智扫通项目",
-      "question": "Dense、BM25 和 RRF 在智扫通项目中如何配合？",
+      "category": "面向智能硬件客服场景的可治理 Agent 平台",
+      "question": "Dense、BM25 和 RRF 在可治理 Agent 平台中如何配合？",
       "expected_sources": [
         "agentproject.md",
         "agentprojectREADME.md"
@@ -162,7 +162,7 @@
     },
     {
       "id": "agent-03",
-      "category": "智扫通项目",
+      "category": "面向智能硬件客服场景的可治理 Agent 平台",
       "question": "BudgetManager 如何限制 Agent 的成本和执行步骤？",
       "expected_sources": [
         "agentproject.md",
@@ -184,8 +184,8 @@
     },
     {
       "id": "agent-04",
-      "category": "智扫通项目",
-      "question": "智扫通项目的离线检索评测结果如何？",
+      "category": "面向智能硬件客服场景的可治理 Agent 平台",
+      "question": "可治理 Agent 平台的离线检索评测结果如何？",
       "expected_sources": [
         "agentproject.md",
         "agentprojectREADME.md"

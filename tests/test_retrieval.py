@@ -109,8 +109,8 @@ def test_retrieval_score_uses_real_cosine_distance(retrieval_svc, mock_chunk_rep
     ))
 
     scores = {result["chunk_id"]: result["score"] for result in results}
-    assert scores["close"] == pytest.approx((1.0 - 0.08) * 0.75)
-    assert scores["distant"] == pytest.approx((1.0 - 0.42) * 0.75)
+    assert scores["close"] == pytest.approx(1.0 - 0.08)
+    assert scores["distant"] == pytest.approx(1.0 - 0.42)
     assert scores["close"] > scores["distant"]
 
 

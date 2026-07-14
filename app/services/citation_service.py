@@ -24,17 +24,13 @@ class CitationService:
         self,
         chunks: list[dict],
         question: str,
-        min_score: float = 0.45,
+        min_score: float = 0.40,
     ) -> bool:
         if not chunks:
             return False
 
         top_score = chunks[0]["score"]
         if top_score < min_score:
-            return False
-
-        # 只有 1 个低可信片段
-        if len(chunks) == 1 and top_score < 0.55:
             return False
 
         # 问题含数字/排名 → 必须有含数字的证据
@@ -53,11 +49,15 @@ class CitationService:
             if not has_resp:
                 return False
 
-        # 问题含"实习" → 必须命中 type=experience（通过 tags 或 section 判断）
+        # 问题含“实习” → 证据本身必须明确提及实习经历。
         if "实习" in question:
             has_exp = any(
                 "experience" in (c.get("tags") or [])
-                or (c.get("section") or "").lower() == "experience"
+                or "实习" in " ".join([
+                    c.get("title") or "",
+                    c.get("section") or "",
+                    c.get("content") or "",
+                ])
                 for c in chunks
             )
             if not has_exp:
