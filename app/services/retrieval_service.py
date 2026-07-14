@@ -47,7 +47,9 @@ class RetrievalService:
         )
 
         source_names = {}
-        document_ids = {chunk.document_id for chunk in raw_chunks if chunk.document_id}
+        document_ids = {
+            chunk.document_id for chunk, _ in raw_chunks if chunk.document_id
+        }
         if document_ids:
             result = await session.execute(
                 select(Document.id, Document.source_id).where(Document.id.in_(document_ids))
@@ -58,10 +60,8 @@ class RetrievalService:
             }
 
         results: list[dict] = []
-        for i, chunk in enumerate(raw_chunks):
-            # 当前仓储层只返回排序后的实体，无法取得原始 cosine distance。
-            # 因此该值只是参与混合排序的名次分，不是向量相似度。
-            vector_score = max(0.0, 1.0 - i / max(len(raw_chunks), 1) * 0.6)
+        for chunk, cosine_distance in raw_chunks:
+            vector_score = max(0.0, min(1.0, 1.0 - cosine_distance))
             final_score = self._score(vector_score, chunk, question)
             if final_score >= min_score:
                 results.append({
