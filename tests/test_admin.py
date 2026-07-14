@@ -3,15 +3,17 @@ from types import SimpleNamespace
 import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPBasicCredentials
+from starlette.requests import Request
 
-from app.api.admin import display_question, require_admin
+from app.api.admin import display_question, require_admin, validate_admin_credentials
+from app.core.config import Settings
 
 
 def test_admin_accepts_matching_credentials():
     settings = SimpleNamespace(admin_username="admin", admin_password="secret")
     credentials = HTTPBasicCredentials(username="admin", password="secret")
 
-    assert require_admin(credentials, settings) is None
+    assert validate_admin_credentials(credentials, settings)
 
 
 @pytest.mark.parametrize(
@@ -25,22 +27,40 @@ def test_admin_accepts_matching_credentials():
 def test_admin_rejects_invalid_credentials(credentials):
     settings = SimpleNamespace(admin_username="admin", admin_password="secret")
 
-    with pytest.raises(HTTPException) as error:
-        require_admin(credentials, settings)
-
-    assert error.value.status_code == 401
-    assert error.value.headers == {
-        "WWW-Authenticate": 'Basic realm="Personal Agent Admin"'
-    }
+    assert not validate_admin_credentials(credentials, settings)
 
 
 def test_admin_stays_closed_without_password():
     settings = SimpleNamespace(admin_username="admin", admin_password="")
 
     with pytest.raises(HTTPException) as error:
-        require_admin(None, settings)
+        validate_admin_credentials(None, settings)
 
     assert error.value.status_code == 503
+
+
+def test_admin_failed_logins_are_rate_limited():
+    request = Request({
+        "type": "http",
+        "headers": [],
+        "client": ("203.0.113.77", 1234),
+    })
+    settings = Settings(
+        _env_file=None,
+        admin_username="admin",
+        admin_password="secret",
+        admin_failed_login_ip_minute_limit=5,
+    )
+    wrong = HTTPBasicCredentials(username="admin", password="wrong")
+
+    for _ in range(5):
+        with pytest.raises(HTTPException) as error:
+            require_admin(request, wrong, settings)
+        assert error.value.status_code == 401
+
+    with pytest.raises(HTTPException) as error:
+        require_admin(request, wrong, settings)
+    assert error.value.status_code == 429
 
 
 def test_admin_replaces_irrecoverable_legacy_question():

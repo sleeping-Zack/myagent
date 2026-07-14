@@ -12,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings, get_settings
 from app.core.database import get_db
+from app.core.rate_limit import admin_auth_rate_limiter
+from app.core.security import get_client_ip, hash_ip
 from app.models.feedback import QuestionFeedback
 from app.repositories.conversation_repository import ConversationRepository
 
@@ -30,20 +32,44 @@ def display_question(value: str | None) -> str:
     return question
 
 
-def require_admin(
-    credentials: HTTPBasicCredentials | None = Depends(security),
-    settings: Settings = Depends(get_settings),
-) -> None:
+def validate_admin_credentials(
+    credentials: HTTPBasicCredentials | None,
+    settings: Settings,
+) -> bool:
     if not settings.admin_password:
         raise HTTPException(status_code=503, detail="管理端尚未配置")
-    valid = credentials is not None and secrets.compare_digest(
+    return credentials is not None and secrets.compare_digest(
         credentials.username.encode("utf-8"),
         settings.admin_username.encode("utf-8"),
     ) and secrets.compare_digest(
         credentials.password.encode("utf-8"),
         settings.admin_password.encode("utf-8"),
     )
+
+
+def require_admin(
+    request: Request,
+    credentials: HTTPBasicCredentials | None = Depends(security),
+    settings: Settings = Depends(get_settings),
+) -> None:
+    client_ip = get_client_ip(request)
+    allowed_ips = settings.csv_values("admin_allowed_ips")
+    if allowed_ips and client_ip not in allowed_ips:
+        raise HTTPException(status_code=403, detail="管理端不允许从当前地址访问")
+
+    valid = validate_admin_credentials(credentials, settings)
     if not valid:
+        if not admin_auth_rate_limiter.allow(
+            "admin-auth:" + hash_ip(client_ip),
+            minute_limit=settings.admin_failed_login_ip_minute_limit,
+            daily_limit=settings.admin_failed_login_ip_minute_limit,
+            count_daily=False,
+        ):
+            raise HTTPException(
+                status_code=429,
+                detail="管理员认证失败次数过多",
+                headers={"Retry-After": "60"},
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="管理员认证失败",

@@ -20,8 +20,13 @@ _SENSITIVE_PATTERNS = [
     r"sk-[A-Za-z0-9]{20,}",                          # API key 格式
     r"\b(?:10|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d+\.\d+\b",  # 私有 IP
     r"-----BEGIN [A-Z ]+-----",                        # PEM 密钥
+    r"(?i:\b(?:api[_-]?key|password|secret|token)\s*[:=]\s*['\"]?[A-Za-z0-9_./+-]{12,})",
 ]
 _SENSITIVE_RE = re.compile("|".join(_SENSITIVE_PATTERNS))
+
+
+def redact_sensitive_text(value: str) -> str:
+    return _SENSITIVE_RE.sub("[REDACTED]", value)
 
 
 def _load_prompt(filename: str) -> str:
@@ -97,7 +102,10 @@ class RagService:
             return
 
         # 4. 格式化引用
-        top_chunks = chunks[: settings.max_context_chunks]
+        top_chunks = [
+            {**chunk, "content": redact_sensitive_text(chunk["content"])}
+            for chunk in chunks[: settings.max_context_chunks]
+        ]
         citations: list[CitationOut] = self._citation.format_citations(top_chunks)
 
         # 5. 先 yield source 事件（前端立即显示引用卡片）

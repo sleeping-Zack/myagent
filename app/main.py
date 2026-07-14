@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import asyncio
 import secrets
 import uuid
 from fastapi import FastAPI, Request
@@ -16,23 +17,50 @@ from app.repositories.conversation_repository import ConversationRepository
 logger = structlog.get_logger()
 
 
+async def cleanup_expired_conversations(retention_days: int) -> None:
+    async with AsyncSessionLocal() as session:
+        deleted = await ConversationRepository().delete_expired(
+            session, retention_days
+        )
+    logger.info("conversation_retention_cleanup", deleted=deleted)
+
+
+async def retention_worker(stop: asyncio.Event, retention_days: int) -> None:
+    while True:
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=24 * 60 * 60)
+            return
+        except asyncio.TimeoutError:
+            try:
+                await cleanup_expired_conversations(retention_days)
+            except Exception as exc:
+                logger.warning("conversation_retention_cleanup_failed", error=str(exc))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
     settings = get_settings()
+    settings.validate_production()
     logger.info("startup", env=settings.app_env, model=settings.deepseek_model)
+    retention_stop = asyncio.Event()
+    retention_task = None
     if settings.conversation_retention_days is not None:
         try:
-            async with AsyncSessionLocal() as session:
-                deleted = await ConversationRepository().delete_expired(
-                    session, settings.conversation_retention_days
-                )
-            logger.info("conversation_retention_cleanup", deleted=deleted)
+            await cleanup_expired_conversations(settings.conversation_retention_days)
         except Exception as exc:
             logger.warning("conversation_retention_cleanup_failed", error=str(exc))
-    yield
-    await engine.dispose()
-    logger.info("shutdown")
+        retention_task = asyncio.create_task(
+            retention_worker(retention_stop, settings.conversation_retention_days)
+        )
+    try:
+        yield
+    finally:
+        retention_stop.set()
+        if retention_task is not None:
+            await retention_task
+        await engine.dispose()
+        logger.info("shutdown")
 
 
 settings = get_settings()
@@ -44,6 +72,10 @@ app = FastAPI(
     openapi_url=None,
     lifespan=lifespan,
 )
+
+allowed_hosts = settings.effective_allowed_hosts()
+if allowed_hosts:
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
 
 
 @app.middleware("http")

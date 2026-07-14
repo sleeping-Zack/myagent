@@ -8,7 +8,7 @@ from app.core.html_sanitizer import safe_url, sanitize_html
 from app.core.security import is_safe_question
 from app.schemas.chat import FeedbackRequest
 from app.services.deepseek_service import DeepSeekService
-from app.services.rag_service import follow_up_suggestions
+from app.services.rag_service import follow_up_suggestions, redact_sensitive_text
 from app.services.retrieval_service import RetrievalService
 
 
@@ -77,3 +77,9 @@ def test_token_count_is_explicitly_an_estimate():
     assert service.estimate_tokens("") == 0
     assert service.estimate_tokens("中文测试") == 4
     assert service.estimate_tokens("hello world") >= 2
+
+
+def test_sensitive_values_are_redacted_before_rag_context():
+    assert "actual-secret-value" not in redact_sensitive_text(
+        "API_KEY=actual-secret-value"
+    )

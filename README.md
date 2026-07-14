@@ -14,6 +14,32 @@ docker compose up -d
 
 服务启动后访问 http://localhost（Nginx 会自动将 HTTP 重定向至 HTTPS）。
 
+## 宝塔生产部署
+
+生产环境继续使用宝塔自带 Nginx，应用容器只监听宿主机
+`127.0.0.1:8000`，不要把 8000 端口开放到公网。上线前必须设置：
+
+```dotenv
+APP_ENV=production
+SITE_URL=https://你的域名
+ALLOWED_HOSTS=你的域名
+TRUSTED_PROXY_IPS=127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+SECRET_KEY=至少32位随机值
+ADMIN_PASSWORD=长随机密码
+# 有固定办公出口 IP 时强烈建议填写
+ADMIN_ALLOWED_IPS=
+```
+
+把 `deploy/baota-nginx-http.conf` 放入 Nginx 的 `http {}` 作用域，
+并把 `deploy/baota-nginx-site.conf` 的内容合并进宝塔生成的 HTTPS
+站点 `server {}`。修改后执行 `nginx -t`，通过后再重载。
+
+`TRUSTED_PROXY_IPS` 只能包含宝塔到 Web 容器之间可能出现的本机或
+Docker 私网来源；8000 端口必须继续只绑定 `127.0.0.1`，否则不要信任整段私网。
+
+应用启动时会拒绝不安全的生产配置，包括非 HTTPS 的 `SITE_URL`、
+默认数据库密码和过短的 `SECRET_KEY`。
+
 ## 对话历史与记忆
 
 - 首次访问会签发仅浏览器持有的 `HttpOnly` 匿名会话 Cookie；服务端只保存令牌哈希。
