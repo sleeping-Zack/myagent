@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional
-from sqlalchemy import select, delete
+from sqlalchemy import Float, select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import cast, func
@@ -18,7 +18,10 @@ class ChunkRepository:
         confidence_levels: Optional[list[str]] = None,
     ) -> list[tuple[DocumentChunk, float]]:
         query_vec = cast(embedding, Vector(settings.embedding_dimensions))
-        cosine_distance = DocumentChunk.embedding.op("<=>")(query_vec)
+        cosine_distance = cast(
+            DocumentChunk.embedding.op("<=>")(query_vec),
+            Float,
+        )
         stmt = select(
             DocumentChunk,
             cosine_distance.label("cosine_distance"),

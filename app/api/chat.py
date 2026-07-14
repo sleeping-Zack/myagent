@@ -6,6 +6,7 @@ import uuid
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+import structlog
 
 from app.core.config import get_settings
 from app.core.database import get_db
@@ -18,13 +19,14 @@ from app.services.citation_service import CitationService
 from app.services.conversation_service import ConversationService
 from app.services.deepseek_service import DeepSeekService, get_deepseek_service
 from app.services.embedding_service import EmbeddingService, get_embedding_service
-from app.services.hr_faq_service import get_pinned_hr_answer
+from app.services.hr_faq_service import get_greeting_answer, get_pinned_hr_answer
 from app.services.rag_service import RagService, follow_up_suggestions
 from app.services.retrieval_service import RetrievalService
 from app.services.visitor_session_service import visitor_session_service
 
 
 router = APIRouter(prefix="/api/v1")
+logger = structlog.get_logger()
 
 
 def _sse(event: str, data: dict) -> str:
@@ -157,8 +159,24 @@ async def chat(
         completed = False
         try:
             yield _sse("meta", {"conversation_id": str(conversation.id)})
+            greeting_answer = get_greeting_answer(question)
             pinned_answer = get_pinned_hr_answer(question)
-            if pinned_answer:
+            if greeting_answer:
+                for start in range(0, len(greeting_answer), 18):
+                    token = greeting_answer[start:start + 18]
+                    answer_parts.append(token)
+                    yield _sse("token", {"content": token})
+                    await asyncio.sleep(0.02)
+                metadata = {
+                    "citation_ids": [],
+                    "citations": [],
+                    "model_name": "static-greeting",
+                    "estimated_input_tokens": 0,
+                    "estimated_output_tokens": 0,
+                    "latency_ms": 0,
+                    "suggestions": follow_up_suggestions(question),
+                }
+            elif pinned_answer:
                 source = {
                     "id": "hr-faq",
                     "title": "06_hr_interview_qa.md",
@@ -229,7 +247,13 @@ async def chat(
                 status="stopped",
             )
             raise
-        except Exception:
+        except Exception as exc:
+            logger.exception(
+                "chat_generation_failed",
+                conversation_id=str(conversation.id),
+                generation_id=str(generation_id),
+                error=str(exc),
+            )
             await repository.complete_assistant_message(
                 db,
                 assistant_message.id,

@@ -131,6 +131,7 @@ async def test_chunk_repository_returns_cosine_distance():
     assert rows == [(chunk, 0.1234)]
     statement = str(session.execute.await_args.args[0])
     assert "<=>" in statement
+    assert "AS FLOAT" in statement
     assert "embedding IS NOT NULL" in statement
 
 
