@@ -8,6 +8,7 @@ from app.core.html_sanitizer import safe_url, sanitize_html
 from app.core.security import is_safe_question
 from app.schemas.chat import FeedbackRequest
 from app.services.deepseek_service import DeepSeekService
+from app.services.hr_faq_service import get_greeting_answer
 from app.services.rag_service import follow_up_suggestions, redact_sensitive_text
 from app.services.retrieval_service import RetrievalService
 
@@ -57,6 +58,12 @@ def test_follow_up_suggestions_are_contextual_and_bounded():
 
     assert 1 <= len(suggestions) <= 3
     assert any("路由" in item or "模块" in item for item in suggestions)
+
+
+def test_greeting_has_static_answer_without_matching_longer_questions():
+    assert get_greeting_answer("你好")
+    assert get_greeting_answer("Hello!")
+    assert get_greeting_answer("你好，请介绍法奥项目") is None
 
 
 def test_feedback_reason_uses_allowlist():

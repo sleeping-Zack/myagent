@@ -15,6 +15,12 @@ _PINNED_QUESTIONS = {
     "朱旭目前最大的不足是什么，如何补齐",
 }
 
+_GREETING_QUESTIONS = {"你好", "您好", "嗨", "hello", "hi"}
+_GREETING_ANSWER = (
+    "你好！我是朱旭的个人招聘知识 Agent。"
+    "你可以问我他的项目经历、技术能力、实习经历或岗位匹配情况。"
+)
+
 
 def _normalize_question(text: str) -> str:
     text = text.strip()
@@ -66,4 +72,10 @@ def get_pinned_hr_answer(question: str) -> Optional[str]:
         ):
             return answer
 
+    return None
+
+
+def get_greeting_answer(question: str) -> Optional[str]:
+    if _compact_question(question) in _GREETING_QUESTIONS:
+        return _GREETING_ANSWER
     return None
