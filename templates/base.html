@@ -17,7 +17,7 @@
   <meta property="og:image" content="{{ request.base_url }}static/images/og-card.svg" />
 
   <link rel="stylesheet" href="/static/css/tailwind.css" />
-  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/main.css?v=20260714" />
 
   {% block head_extra %}{% endblock %}
 </head>
@@ -122,15 +122,6 @@
 
   <!-- 移动端菜单脚本 -->
   <script nonce="{{ request.state.csp_nonce }}">
-    window.addEventListener('pointerdown', () => {
-      document.documentElement.classList.add('pointer-input');
-    }, { capture: true });
-    window.addEventListener('keydown', event => {
-      if (event.key === 'Tab') {
-        document.documentElement.classList.remove('pointer-input');
-      }
-    }, { capture: true });
-
     const btn = document.getElementById('mobile-menu-btn');
     const menu = document.getElementById('mobile-menu');
     btn.addEventListener('click', () => menu.classList.toggle('hidden'));

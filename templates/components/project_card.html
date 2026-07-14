@@ -1,9 +1,16 @@
 {% macro project_card(project) %}
+{% set architecture_images = {
+  'agentproject': '/static/images/projects/agentproject.svg',
+  'farino': '/static/images/projects/farino.svg',
+  'myagent': '/static/images/projects/myagent.svg',
+  'mood_tracker': '/static/images/projects/mood_tracker.svg'
+} %}
+{% set architecture_image = project.cover_image or architecture_images.get(project.slug) %}
 <div class="bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-xl p-5 flex flex-col gap-4 transition-colors group">
 
-  {% if project.cover_image %}
+  {% if architecture_image %}
   <a href="/projects/{{ project.slug }}" class="block -m-5 mb-0 overflow-hidden rounded-t-xl border-b border-slate-800">
-    <img src="{{ project.cover_image }}" alt="{{ project.title }} 架构示意图" class="w-full aspect-[16/8] object-cover" loading="lazy" />
+    <img src="{{ architecture_image }}" alt="{{ project.title }} 架构示意图" class="w-full aspect-[16/8] object-cover" loading="lazy" />
   </a>
   {% endif %}
 

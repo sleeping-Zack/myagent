@@ -199,15 +199,10 @@ html {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
-/* ── 焦点样式：鼠标点击不画框，键盘导航保留可见提示 ────────── */
+/* ── 焦点样式：使用组件自身的边框/背景状态，不显示浏览器 outline ─ */
+*:focus,
 *:focus-visible {
-  outline: 2px solid rgba(56, 189, 248, 0.75);
-  outline-offset: 2px;
-}
-
-html.pointer-input *:focus,
-html.pointer-input *:focus-visible {
-  outline: none;
+  outline: none !important;
 }
 
 /* ── 页面过渡淡入 ─────────────────────────────────────────── */

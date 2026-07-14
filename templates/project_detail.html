@@ -8,6 +8,14 @@
 
 {% block content %}
 
+{% set architecture_images = {
+  'agentproject': '/static/images/projects/agentproject.svg',
+  'farino': '/static/images/projects/farino.svg',
+  'myagent': '/static/images/projects/myagent.svg',
+  'mood_tracker': '/static/images/projects/mood_tracker.svg'
+} %}
+{% set architecture_image = project.cover_image or architecture_images.get(project.slug) %}
+
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
   <!-- 面包屑 -->
@@ -82,9 +90,9 @@
         </div>
       </div>
 
-      {% if project.cover_image %}
+      {% if architecture_image %}
       <figure class="mb-8 overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
-        <img src="{{ project.cover_image }}" alt="{{ project.title }} 架构示意图" class="w-full" />
+        <img src="{{ architecture_image }}" alt="{{ project.title }} 架构示意图" class="w-full" />
         <figcaption class="px-4 py-2 text-xs text-slate-500">架构示意图，非产品运行截图</figcaption>
       </figure>
       {% endif %}
