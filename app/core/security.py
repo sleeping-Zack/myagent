@@ -34,16 +34,41 @@ def get_client_ip(request: Request) -> str:
 
 
 def is_safe_question(text: str) -> bool:
-    """拒绝明显的越权、提示词导出和批量知识库导出请求。"""
-    dangerous_patterns = [
+    """拒绝明显的越权、敏感资源读取和知识库导出请求。"""
+    normalized = re.sub(r"\s+", "", text.lower())
+
+    direct_dangerous_patterns = [
         r"忽略.{0,12}(此前|之前|以上).{0,8}(指令|规则|要求)",
         r"ignore.{0,20}(previous|prior).{0,12}(instruction|prompt)",
-        r"(输出|显示|泄露|告诉我).{0,12}(系统提示词|system prompt|开发者指令)",
-        r"(系统提示词|system prompt|开发者指令).{0,12}(输出|显示|泄露|完整)",
-        r"(列出|导出|返回).{0,12}(全部|所有|完整).{0,12}(知识库|原文|文档)",
-        r"(列出|导出|返回).{0,12}(知识库|原文|文档).{0,12}(全部|所有|完整|隐私)",
         r"(未公开|私有|隐藏).{0,10}(信息|资料|内容)",
         r"(api[ _-]?key|密码|私钥|ssh|服务器凭据)",
     ]
-    lower = text.lower()
-    return not any(re.search(pattern, lower, re.IGNORECASE) for pattern in dangerous_patterns)
+    if any(re.search(pattern, normalized, re.IGNORECASE) for pattern in direct_dangerous_patterns):
+        return False
+
+    extraction_intent = re.search(
+        r"打开|读取|查看|展示|显示|输出|导出|列(?:出|一下)|返回|发送|发给我|"
+        r"复述|总结|目录|列表|有哪些(?:文档|文件|内容)|"
+        r"都写了什么|写了什么|完整内容|全部内容|原文|全文",
+        normalized,
+        re.IGNORECASE,
+    )
+    if not extraction_intent:
+        return True
+
+    protected_resource = re.search(
+        r"知识库|资料库|文档库|内部(?:文档|文件|资料)|私有(?:文档|文件|资料)|"
+        r"提示词|系统提示词|systemprompt|开发者指令|(?:hr|面试)问答(?:文档|文件)?|"
+        r"(?:knowledge|prompts?)[\\/]",
+        normalized,
+        re.IGNORECASE,
+    )
+    file_reference = re.search(
+        r"(?:[\w\u4e00-\u9fff.-]+[\\/])+[\w\u4e00-\u9fff.-]+|"
+        r"[\w\u4e00-\u9fff.-]+\.[a-z][a-z0-9_-]{0,11}(?![a-z0-9])",
+        normalized,
+        re.IGNORECASE,
+    )
+    generic_file_target = re.search(r"文档|文件", normalized)
+
+    return not (protected_resource or file_reference or generic_file_target)

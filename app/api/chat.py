@@ -179,7 +179,7 @@ async def chat(
             elif pinned_answer:
                 source = {
                     "id": "hr-faq",
-                    "title": "06_hr_interview_qa.md",
+                    "title": "HR 高频问答",
                     "section": question,
                     "content_preview": pinned_answer[:150],
                     "project_slug": None,

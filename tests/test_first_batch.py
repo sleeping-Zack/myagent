@@ -53,6 +53,26 @@ def test_citation_exposes_ranking_score_not_relevance_percentage():
     assert citation.ranking_score == 0.8123
 
 
+def test_citation_does_not_expose_source_filename():
+    citation = CitationService().format_citations([
+        {
+            "chunk_id": "chunk-1",
+            "title": "候选人优势",
+            "source_name": "06_hr_interview_qa.md",
+            "section": "overview",
+            "content": "使用 MASTER_ALL.md 和 projects/ 目录导入资料",
+            "score": 0.8,
+            "tags": [],
+            "project_id": None,
+        }
+    ])[0]
+
+    assert citation.title == "候选人优势"
+    assert "06_hr_interview_qa.md" not in citation.model_dump_json()
+    assert "MASTER_ALL.md" not in citation.content_preview
+    assert "projects/" not in citation.content_preview
+
+
 def test_global_error_response_does_not_expose_traceback():
     from app.main import global_exception_handler
 

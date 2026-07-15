@@ -2,15 +2,27 @@ import re
 from app.schemas.citation import CitationOut
 
 
+_INTERNAL_REFERENCE_RE = re.compile(
+    r"(?:[\w\u4e00-\u9fff.-]+[\\/])+[\w\u4e00-\u9fff.-]*|"
+    r"[\w\u4e00-\u9fff.-]+\.[a-z][a-z0-9_-]{0,11}(?![a-z0-9])",
+    re.IGNORECASE,
+)
+
+
+def _redact_internal_references(value: str) -> str:
+    return _INTERNAL_REFERENCE_RE.sub("[内部资料]", value)
+
+
 class CitationService:
     def format_citations(self, chunks: list[dict]) -> list[CitationOut]:
         citations: list[CitationOut] = []
         for chunk in chunks:
-            preview = (chunk.get("content") or "")[:150]
+            title = _redact_internal_references(chunk["title"])
+            preview = _redact_internal_references((chunk.get("content") or "")[:150])
             citations.append(
                 CitationOut(
                     id=chunk["chunk_id"],
-                    title=chunk.get("source_name") or chunk["title"],
+                    title=title,
                     section=chunk.get("section"),
                     content_preview=preview,
                     project_slug=chunk.get("project_id"),
