@@ -41,7 +41,30 @@ def follow_up_suggestions(question: str) -> list[str]:
         return ["混合检索的离线评测结果如何？", "BudgetManager 如何控制 Agent？"]
     if "实习" in q or "长冈" in q or "血压计" in q:
         return ["这段嵌入式经历对 Agent 开发有什么帮助？", "实习中解决过哪些稳定性问题？"]
-    return ["朱旭最有代表性的项目是什么？", "他的能力边界和当前不足是什么？"]
+    return ["朱旭最有代表性的项目是什么？", "他的核心优势和技术能力是什么？"]
+
+
+def answer_scope_instruction(question: str) -> str:
+    q = question.lower()
+    strength_only = bool(re.search(
+        r"优势|优点|强项|长处|竞争力|为什么.{0,12}适合|为何.{0,12}适合",
+        q,
+    ))
+    weakness_only = bool(re.search(r"不足|缺点|短板|弱项|局限|风险", q))
+    overall_fit = bool(re.search(
+        r"整体.{0,6}匹配|岗位匹配度|匹配情况|是否.{0,6}匹配|胜任度",
+        q,
+    ))
+
+    if strength_only and not weakness_only:
+        return "只回答优势及其证据，不主动补充不足、短板、局限或风险。"
+    if weakness_only and not strength_only:
+        return "只回答用户询问的不足、短板、局限或风险，不额外扩展无关优点。"
+    if strength_only and weakness_only:
+        return "分别回答用户询问的优势和不足，并以有证据支持的优势为主。"
+    if overall_fit:
+        return "回答整体匹配情况，同时说明有证据支持的优势和客观差距，并以优势为主。"
+    return "严格回答当前问题，不主动扩展到用户没有询问的不足、局限或风险。"
 
 
 class RagService:
@@ -161,6 +184,7 @@ class RagService:
             conversation_context=conversation_context,
             retrieved_chunks=retrieved_chunks_text,
             coverage_context=coverage_context,
+            response_scope=answer_scope_instruction(question),
         )
 
         messages = [

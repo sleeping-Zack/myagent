@@ -1,4 +1,6 @@
+import asyncio
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
@@ -9,8 +11,14 @@ from app.core.security import is_safe_question
 from app.schemas.chat import FeedbackRequest
 from app.services.deepseek_service import DeepSeekService
 from app.services.hr_faq_service import get_greeting_answer
-from app.services.rag_service import follow_up_suggestions, redact_sensitive_text
-from app.services.retrieval_service import RetrievalService
+from app.services.query_planner import QueryPlan
+from app.services.rag_service import (
+    RagService,
+    answer_scope_instruction,
+    follow_up_suggestions,
+    redact_sensitive_text,
+)
+from app.services.retrieval_service import RetrievalOutcome, RetrievalService
 
 
 def test_project_html_is_sanitized_and_links_are_allowlisted():
@@ -93,6 +101,84 @@ def test_follow_up_suggestions_are_contextual_and_bounded():
 
     assert 1 <= len(suggestions) <= 3
     assert any("路由" in item or "模块" in item for item in suggestions)
+
+
+@pytest.mark.parametrize(
+    ("question", "expected", "excluded"),
+    [
+        ("你的优点是什么？", "只回答优势", "同时说明"),
+        ("为什么适合 Agent 应用开发实习？", "只回答优势", "同时说明"),
+        ("目前最大的不足是什么？", "只回答用户询问的不足", "以优势为主"),
+        ("请分别说说优势和不足", "分别回答用户询问的优势和不足", "整体匹配"),
+        ("整体岗位匹配度如何？", "回答整体匹配情况", "只回答优势"),
+        ("介绍一下法奥项目", "严格回答当前问题", "同时说明"),
+    ],
+)
+def test_answer_scope_follows_the_question(question, expected, excluded):
+    instruction = answer_scope_instruction(question)
+
+    assert expected in instruction
+    assert excluded not in instruction
+
+
+def test_default_follow_up_does_not_push_weaknesses():
+    suggestions = follow_up_suggestions("你最擅长什么？")
+
+    assert not any(
+        term in suggestion
+        for suggestion in suggestions
+        for term in ("不足", "短板", "边界", "局限")
+    )
+
+
+def test_strength_scope_is_included_in_model_prompt():
+    class RetrievalStub:
+        async def retrieve_with_plan(self, *args, **kwargs):
+            return RetrievalOutcome(
+                chunks=[{
+                    "chunk_id": "strength-1",
+                    "title": "核心优势",
+                    "section": "最大优势",
+                    "content": "核心优势是工程闭环意识。",
+                    "score": 0.9,
+                    "tags": ["优势"],
+                    "project_id": None,
+                }],
+                plan=QueryPlan(
+                    intent="general",
+                    context_limit=5,
+                ),
+                missing_coverage=[],
+            )
+
+    class DeepSeekStub:
+        messages = None
+
+        async def stream_chat(self, messages):
+            self.messages = messages
+            yield "工程闭环意识是我的核心优势。"
+
+        @staticmethod
+        def estimate_tokens(text):
+            return len(text)
+
+    citation = MagicMock()
+    citation.has_sufficient_evidence.return_value = True
+    citation.format_citations.return_value = []
+    deepseek = DeepSeekStub()
+    service = RagService(RetrievalStub(), deepseek, citation)
+
+    async def collect_events():
+        return [event async for event in service.answer(
+            "你的优点是什么？",
+            conversation_id="conversation-1",
+            session=MagicMock(),
+        )]
+
+    asyncio.run(collect_events())
+
+    assert "只回答优势及其证据" in deepseek.messages[-1]["content"]
+    assert "不主动补充不足" in deepseek.messages[-1]["content"]
 
 
 def test_greeting_has_static_answer_without_matching_longer_questions():
