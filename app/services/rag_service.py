@@ -74,12 +74,13 @@ class RagService:
         start_ms = int(time.time() * 1000)
 
         # 2. 检索
-        chunks = await self._retrieval.retrieve(
+        retrieval = await self._retrieval.retrieve_with_plan(
             question,
             session=session,
             top_k=settings.retrieval_top_k,
             min_score=settings.min_relevance_score,
         )
+        chunks = retrieval.chunks
 
         # 3. 证据充分性判断
         if not self._citation.has_sufficient_evidence(
@@ -104,13 +105,30 @@ class RagService:
         # 4. 格式化引用
         top_chunks = [
             {**chunk, "content": redact_sensitive_text(chunk["content"])}
-            for chunk in chunks[: settings.max_context_chunks]
+            for chunk in chunks[: retrieval.plan.context_limit]
         ]
         citations: list[CitationOut] = self._citation.format_citations(top_chunks)
 
         # 5. 先 yield source 事件（前端立即显示引用卡片）
         for c in citations:
             yield {"event": "source", "data": c.model_dump()}
+
+        if retrieval.direct_answer is not None:
+            for start in range(0, len(retrieval.direct_answer), 24):
+                yield {
+                    "event": "token",
+                    "data": {"content": retrieval.direct_answer[start:start + 24]},
+                }
+            yield {"event": "done", "data": {
+                "citation_ids": [c.id for c in citations],
+                "citations": [citation.model_dump() for citation in citations],
+                "model_name": "structured-project-query",
+                "estimated_input_tokens": self._deepseek.estimate_tokens(question),
+                "estimated_output_tokens": self._deepseek.estimate_tokens(retrieval.direct_answer),
+                "latency_ms": int(time.time() * 1000) - start_ms,
+                "suggestions": follow_up_suggestions(question),
+            }}
+            return
 
         # 6. 构建 messages
         system_prompt = _load_prompt("system_prompt.txt")
@@ -129,10 +147,20 @@ class RagService:
             for i, c in enumerate(top_chunks)
         ) + "\n</knowledge_data>"
 
+        expected = retrieval.plan.expected_coverage
+        covered = [item for item in expected if item not in retrieval.missing_coverage]
+        coverage_context = (
+            f"要求覆盖：{'、'.join(expected)}；"
+            f"已有证据：{'、'.join(covered) or '无'}；"
+            f"缺少证据：{'、'.join(retrieval.missing_coverage) or '无'}。"
+            if expected else "当前问题不要求多对象覆盖。"
+        )
+
         user_message = answer_tmpl.format(
             question=question,
             conversation_context=conversation_context,
             retrieved_chunks=retrieved_chunks_text,
+            coverage_context=coverage_context,
         )
 
         messages = [
