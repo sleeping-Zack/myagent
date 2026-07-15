@@ -33,13 +33,14 @@ from dotenv import load_dotenv
 load_dotenv(PROJECT_ROOT / ".env")
 
 # 延迟导入（需要 DATABASE_URL 已经加载）
-from sqlalchemy import text, select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.services.embedding_service import get_embedding_service
 from app.models.document import Document
 from app.models.chunk import DocumentChunk
+from app.models.project import Project
 
 
 # ---------------------------------------------------------------------------
@@ -52,6 +53,21 @@ SKIP_DIRS = {"data", "prompts", "sources"}  # 非文章目录，跳过
 # chunk 大小上限（中文字符数）
 CHUNK_MAX_CHARS = 500
 CHUNK_MIN_CHARS = 50
+
+
+def infer_project_slug(md_path: Path, meta: dict[str, Any]) -> Optional[str]:
+    configured = meta.get("project_slug")
+    if configured:
+        return str(configured).strip()
+
+    try:
+        relative = md_path.relative_to(KNOWLEDGE_DIR)
+    except ValueError:
+        return None
+    if len(relative.parts) < 2 or relative.parts[0] != "projects":
+        return None
+
+    return re.sub(r"readme$", "", md_path.stem, flags=re.IGNORECASE)
 
 
 # ---------------------------------------------------------------------------
@@ -294,6 +310,7 @@ async def ingest_all(
         "files_processed": 0,
         "chunks_new": 0,
         "chunks_updated": 0,
+        "project_links_updated": 0,
         "docs_deleted": 0,
         "errors": 0,
     }
@@ -351,6 +368,14 @@ async def ingest_all(
 
             processed_source_ids.add(source_id)
 
+            project_slug = infer_project_slug(md_path, meta)
+            project_id = (
+                await _get_project_id_by_slug(session, project_slug)
+                if project_slug else None
+            )
+            if project_slug and project_id is None:
+                print(f"    警告：未找到项目 slug={project_slug}，文档暂不关联项目")
+
             # 计算内容 hash
             content_hash = hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
@@ -358,6 +383,10 @@ async def ingest_all(
             if not force:
                 existing_doc = await _get_document_by_source_id(session, source_id)
                 if existing_doc and existing_doc.content_hash == content_hash:
+                    if project_id and existing_doc.project_id != project_id and not dry_run:
+                        await _sync_project_link(session, existing_doc.id, project_id)
+                        stats["project_links_updated"] += 1
+                        print(f"  [关联] {rel_path} -> {project_slug}")
                     print(f"  [跳过] hash 未变化: {rel_path}")
                     stats["files_skipped_hash"] += 1
                     continue
@@ -398,6 +427,7 @@ async def ingest_all(
                 "source_id": source_id,
                 "title": title,
                 "document_type": meta.get("type", "general"),
+                "project_id": project_id,
                 "source_path": source_id,
                 "content_hash": content_hash,
                 "visibility": meta.get("visibility", "public"),
@@ -417,6 +447,7 @@ async def ingest_all(
                 chunk_data = {
                     "id": uuid.uuid4(),
                     "document_id": doc_id,
+                    "project_id": project_id,
                     "chunk_index": idx,
                     "title": chunk["title"],
                     "section": chunk["section"],
@@ -456,6 +487,27 @@ async def _get_document_by_source_id(session: AsyncSession, source_id: str) -> O
         select(Document).where(Document.source_id == source_id)
     )
     return result.scalar_one_or_none()
+
+
+async def _get_project_id_by_slug(session: AsyncSession, slug: str) -> Optional[uuid.UUID]:
+    result = await session.execute(select(Project.id).where(Project.slug == slug))
+    return result.scalar_one_or_none()
+
+
+async def _sync_project_link(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    project_id: uuid.UUID,
+) -> None:
+    await session.execute(
+        update(Document).where(Document.id == document_id).values(project_id=project_id)
+    )
+    await session.execute(
+        update(DocumentChunk)
+        .where(DocumentChunk.document_id == document_id)
+        .values(project_id=project_id)
+    )
+    await session.commit()
 
 
 async def _upsert_document(session: AsyncSession, data: dict) -> uuid.UUID:
@@ -539,6 +591,7 @@ async def main(force: bool = False, dry_run: bool = False) -> None:
     print(f"  实际处理文件数  : {stats['files_processed']}")
     if not dry_run:
         print(f"  新增/更新 chunk : {stats['chunks_new']}")
+        print(f"  补全项目关联    : {stats['project_links_updated']}")
         print(f"  删除孤儿文档    : {stats['docs_deleted']}")
     if stats["errors"]:
         print(f"  错误数          : {stats['errors']}")

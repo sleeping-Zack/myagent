@@ -42,14 +42,24 @@ def mock_embedding_svc():
 
 @pytest.fixture
 def mock_chunk_repo():
-    return AsyncMock()
+    repo = AsyncMock()
+    repo.search_lexical.return_value = []
+    return repo
 
 
 @pytest.fixture
-def retrieval_svc(mock_chunk_repo, mock_embedding_svc):
+def mock_project_repo():
+    repo = AsyncMock()
+    repo.get_all_public.return_value = []
+    return repo
+
+
+@pytest.fixture
+def retrieval_svc(mock_chunk_repo, mock_embedding_svc, mock_project_repo):
     return RetrievalService(
         chunk_repo=mock_chunk_repo,
         embedding_svc=mock_embedding_svc,
+        project_repo=mock_project_repo,
     )
 
 
@@ -138,19 +148,17 @@ def test_retrieval_limits_each_document_to_two_chunks(retrieval_svc, mock_chunk_
     assert [result["chunk_id"] for result in results] == ["same-0", "same-1", "other"]
 
 
-@pytest.mark.asyncio
-async def test_chunk_repository_returns_cosine_distance():
+def test_chunk_repository_returns_cosine_distance():
     session = AsyncMock()
     query_result = MagicMock()
     chunk = _make_chunk()
     query_result.all.return_value = [(chunk, 0.1234)]
     session.execute.return_value = query_result
 
-    rows = await ChunkRepository().search_similar(
-        session=session,
-        embedding=[0.1] * 1024,
-        top_k=1,
-    )
+    import asyncio
+    rows = asyncio.run(ChunkRepository().search_similar(
+        session=session, embedding=[0.1] * 1024, top_k=1,
+    ))
 
     assert rows == [(chunk, 0.1234)]
     statement = str(session.execute.await_args.args[0])
@@ -159,14 +167,32 @@ async def test_chunk_repository_returns_cosine_distance():
     assert "embedding IS NOT NULL" in statement
 
 
-@pytest.mark.asyncio
-async def test_public_project_detail_query_enforces_visibility():
+def test_chunk_repository_lexical_search_uses_ranked_text_fields():
+    session = AsyncMock()
+    query_result = MagicMock()
+    chunk = _make_chunk()
+    query_result.all.return_value = [(chunk, 4.5)]
+    session.execute.return_value = query_result
+
+    import asyncio
+    rows = asyncio.run(ChunkRepository().search_lexical(
+        session=session, terms=["法奥"], top_k=1,
+    ))
+
+    assert rows == [(chunk, 1.0)]
+    statement = str(session.execute.await_args.args[0])
+    assert "lower" in statement.lower()
+    assert "ORDER BY" in statement
+
+
+def test_public_project_detail_query_enforces_visibility():
     session = AsyncMock()
     result = MagicMock()
     result.scalar_one_or_none.return_value = None
     session.execute.return_value = result
 
-    await ProjectRepository().get_by_slug(session, "private-project")
+    import asyncio
+    asyncio.run(ProjectRepository().get_by_slug(session, "private-project"))
 
     statement = session.execute.await_args.args[0]
     assert "projects.visibility" in str(statement)

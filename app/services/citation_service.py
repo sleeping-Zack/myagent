@@ -25,7 +25,7 @@ class CitationService:
                     title=title,
                     section=chunk.get("section"),
                     content_preview=preview,
-                    project_slug=chunk.get("project_id"),
+                    project_slug=chunk.get("project_slug"),
                     tags=chunk.get("tags") or [],
                     ranking_score=chunk["score"],
                 )
