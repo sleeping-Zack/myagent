@@ -24,6 +24,7 @@ htmlcov/
 node_modules/
 _kb_backup/
 _kb_extract_tmp/
+knowledge/
 knowledge/02_private_profile.md
 knowledge/data/
 .claude/
