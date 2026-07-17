@@ -6,6 +6,22 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
+
+
+class ProxyHeadersMiddleware:
+    """Trust X-Forwarded-Proto header from reverse proxy."""
+
+    def __init__(self, app: ASGIApp, trusted_hosts: list[str] | None = None) -> None:
+        self.app = app
+        self.trusted_hosts = trusted_hosts or ["*"]
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] in ("http", "websocket"):
+            headers = dict(scope.get("headers", []))
+            if b"x-forwarded-proto" in headers:
+                scope["scheme"] = headers[b"x-forwarded-proto"].decode("latin1")
+        return await self.app(scope, receive, send)
 import structlog
 
 from app.core.config import get_settings
@@ -76,6 +92,9 @@ app = FastAPI(
 allowed_hosts = settings.effective_allowed_hosts()
 if allowed_hosts:
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
+
+# Trust X-Forwarded-Proto header from reverse proxy
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 
 
 @app.middleware("http")
