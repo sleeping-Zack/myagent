@@ -36,20 +36,22 @@ AGENTPROJECT_HTML = dedent("""
 <ul>
   <li><strong>RAG 知识库</strong>：从 PDF / TXT 构建 Chroma 向量库，Dense 向量分数与中文 BM25 双路召回，经 RRF 融合与可选 Cross-Encoder 精排后生成 evidence 与引用。</li>
   <li><strong>多工具 Agent</strong>：支持知识库检索、天气、用户位置、用户 ID、当前月份、使用记录查询和报告上下文切换。</li>
-  <li><strong>Harness 控制层</strong>：统一 <code>AgentRunner</code> / <code>AgentState</code>，支持预算停止、动态工具策略、真实审批、答案验证、artifact 存储和诊断 trace。</li>
+  <li><strong>Harness 控制层</strong>：统一 <code>AgentRunner</code> / <code>AgentState</code>，支持 Direct / ReAct / Plan-Execute 路由、共享预算、动态工具策略、真实审批、答案验证、artifact 存储和诊断 trace。</li>
+  <li><strong>共享预算</strong>：<code>BudgetManager</code> 默认限制 8 steps、8 tool calls 和 32k tokens，通过 reserve / commit / release 避免并发调用超卖。</li>
   <li><strong>动态工具治理</strong>：<code>ToolRegistry</code> 管工具元数据，<code>ToolPolicy</code> 从版本化 YAML 加载 tenant / role / scene / tool / args 规则，输出可审计的 <code>allow / deny / need_approval / need_redaction</code> 决策。</li>
   <li><strong>真实 HITL 审批</strong>：敏感工具进入 <code>SQLiteApprovalStore</code>，普通用户需审批，operator / admin 可审批。</li>
   <li><strong>答案质量闸门</strong>：<code>AnswerVerifier</code> 依次执行结构校验、Claim-Evidence 对齐与危险结论检测，仅在高风险或低置信时调用 <code>LLMJudge</code>。</li>
   <li><strong>产物留存</strong>：<code>SQLiteArtifactStore</code> 按 request_id 保存 final answer、verification failure、evidence、tool results 等运行产物。</li>
   <li><strong>MCP 工具服务</strong>：支持 JSON-RPC <code>initialize</code>、<code>tools/list</code>、<code>tools/call</code>；MCP 工具调用同样经过 ToolPolicy 和审批存储。</li>
   <li><strong>可观测性</strong>：包含 request / tool / model trace、diagnostic event、OpenTelemetry 风格 span、Prometheus 指标，以及带序号、心跳、背压和断线重放的实时 SSE 事件流。</li>
-  <li><strong>评测门禁</strong>：PR 运行 30 条冻结真实检索排名和 62 条离线 Agent golden，校验固定阈值与相对基线退化；真实模型评测由独立工作流定期执行。</li>
+  <li><strong>评测门禁</strong>：PR 固定运行 30 条检索、12 条生成和 62 条 Agent 回归，校验绝对阈值与版本化 baseline；600+ Pytest 用例覆盖审批、重试、超时、熔断降级和 SSE 时序。</li>
+  <li><strong>多实例服务</strong>：支持 SQLite / PostgreSQL 存储切换、Redis Streams 事件重放与共享限流缓存，并通过 OpenTelemetry 导出请求级链路。</li>
 </ul>
 
 <h2>系统架构</h2>
 <p>整体分为四个层面：</p>
 <ul>
-  <li><strong>执行面</strong>：<code>ReactAgent</code>、LangChain ReAct、工具、RAG、数据服务。</li>
+  <li><strong>执行面</strong>：<code>TaskRouter</code>、Direct / ReAct / Plan-Execute、工具、RAG、数据服务。</li>
   <li><strong>控制面</strong>：<code>AgentRunner</code>、<code>AgentState</code>、<code>Budget</code>、<code>ToolPolicy</code>、审批、Verifier、Artifact、Diagnostic Trace。</li>
   <li><strong>接入面</strong>：FastAPI（<code>/chat</code>、<code>/chat/stream</code>、<code>/harness/run</code>、审批、artifact、MCP、trace、metrics、judge）、Streamlit、MCP stdio / HTTP。</li>
   <li><strong>治理面</strong>：API Key 鉴权、租户 / 角色 / principal 可信上下文、限流、Prompt Injection 检测、metrics、trace、评测门禁。</li>
@@ -57,7 +59,7 @@ AGENTPROJECT_HTML = dedent("""
 
 <h2>个人负责</h2>
 <ul>
-  <li>整体架构设计与执行 / 控制 / 接入 / 治理四层拆分。</li>
+  <li>作为个人开源项目作者 / 维护者，完成执行 / 控制 / 接入 / 治理四层架构拆分。</li>
   <li>RAG 双路召回、RRF 融合与 Cross-Encoder 精排链路。</li>
   <li>Harness 控制层：AgentState 状态机、Budget、动态工具策略、审批、Verifier、Artifact、Trace 整套实现。</li>
   <li>ToolPolicy 版本化 YAML 规则引擎和可审计决策输出。</li>
@@ -74,55 +76,48 @@ AGENTPROJECT_HTML = dedent("""
 
 FARINO_HTML = dedent("""
 <h2>项目简介</h2>
-<p>南昌大学与法奥机器人校企合作智能客服平台，面向机器人产品咨询、技术资料检索、复杂任务处理和售后服务，基于 <strong>AIFlowy 进行企业级二次开发</strong>，构建管理端与用户端一体化的客服工作台，支持企业内网私有化部署。</p>
+<p>南昌大学与法奥机器人校企合作智能客服平台，面向机器人技术咨询、资料检索与售后服务，基于 <strong>AIFlowy 进行企业级二次开发</strong>。个人贡献集中在 RAG 评测、可观测链路、Human-in-the-loop QA 闭环，以及既有 Plan-Execute 的中日双语扩展。</p>
 
 <h2>核心功能</h2>
 
-<h3>1. Direct / Agentic 两级路由</h3>
-<p>针对简单问题也进入完整 Agent 流程、增加响应时间与模型调用开销的问题，设计两级路由：</p>
+<h3>1. RAG Gold Dataset 与证据对齐</h3>
+<p>围绕 FAIRINO v3.9.1 用户手册构建 <strong>168 条 / 26 类 Gold Dataset</strong>（164 可答、4 拒答）与 <strong>79 个页级证据块</strong>：</p>
 <ul>
-  <li>普通寒暄、简单问答进入 Direct 链路。</li>
-  <li>通过规则判断与 Qwen 意图识别分析请求复杂度。</li>
-  <li>需要外部能力的请求进入 Agentic 链路，可继续调用知识库、Workflow、Plugin 和 MCP。</li>
-  <li>减少简单问题不必要的计划生成与工具调用。</li>
+  <li>以稳定 chunk ID 对齐手册物理页码、证据片段与标准答案。</li>
+  <li>覆盖事实查询、操作步骤、故障处理、参数约束、拒答和版本混淆等 26 类问题。</li>
+  <li>保留可追溯的 reference chunk，为检索、生成和引用评测提供统一基准。</li>
 </ul>
 
-<h3>2. Agent 动态任务规划</h3>
-<p>根据用户问题以及 Bot 已绑定的知识库、Workflow、Plugin 和 MCP 能力，动态生成 3—5 步执行计划。规划与执行过程中增加：</p>
+<h3>2. RAG 可观测评测链路</h3>
+<p>建立检索、上下文、生成、引用、拒答、安全与性能 7 层评测，通过 SSE Trace 输出召回、重排、最终上下文和引用证据，统计并归因：</p>
 <ul>
-  <li>工具类型校验</li>
-  <li>工具 ID 合法性校验</li>
-  <li>参数结构与必填项校验</li>
-  <li>无效工具降级与异常结果兜底</li>
-  <li>多语言计划展示</li>
-</ul>
-<p>前端通过 SSE 接收计划更新事件，实时展示计划生成、当前任务目标、步骤开始、工具执行、步骤完成和整体任务结束。</p>
-
-<h3>3. QA 数据闭环</h3>
-<p>从历史会话中抽取 User–Assistant 问答对，将客服对话转化为可审核、可编辑、可导出的知识资产：</p>
-<ul>
-  <li>User–Assistant 消息自动配对，空内容与低质量回答过滤。</li>
-  <li>基于消息 ID 的幂等去重，原始问题与答案快照保留。</li>
-  <li>人工编辑、标签与审核状态，按机器人、时间、状态筛选。</li>
-  <li>Markdown 批量导出，优质问答回流知识库。</li>
+  <li>Recall、Precision、MRR、nDCG 等检索指标。</li>
+  <li>Claim Coverage、Faithfulness 与引用准确率。</li>
+  <li>拒答、安全、P50 / P95 延迟和 Token 消耗。</li>
+  <li>自动生成评测摘要和 Bad Case 报告。</li>
 </ul>
 
-<h3>4. 售后工单管理</h3>
-<p>构建用户端与管理端售后工单流程，工单状态覆盖<strong>待处理 / 处理中 / 待用户补充 / 已解决 / 已关闭</strong> 五种状态。系统依据用户身份进行数据隔离：用户端仅查看和管理本人提交的工单，管理端负责筛选、处理和更新工单状态。</p>
+<h3>3. Human-in-the-loop QA 闭环</h3>
+<p>从 0 到 1 打通历史对话到可回灌知识资产的 QA 闭环：</p>
+<ul>
+  <li>按 Bot 与时间窗抽取并配对 User→Assistant 消息。</li>
+  <li>基于源消息 ID 幂等去重，过滤空内容、系统错误和噪声。</li>
+  <li>支持人工复核、标签筛选和 Markdown 批量导出。</li>
+</ul>
 
-<h3>5. 私有化部署</h3>
-<p>使用 Docker Compose 编排后端、管理端、用户端、MySQL 和 Redis 等服务。Nginx 负责 API 反向代理、前端页面与静态资源访问、SSE 长连接转发、长时间 Agent 任务的超时配置。</p>
+<h3>4. Plan-Execute 中日双语扩展</h3>
+<p>在既有 Plan-Execute 架构上增加语言检测与约束，将其贯穿规划、执行、校验和兜底流程，同时兼容 JSON / 纯文本历史消息，保证多轮售后对话语言一致。</p>
 
 <h2>技术栈</h2>
 <ul>
-  <li><strong>后端</strong>：Java 17、Spring Boot 3、MyBatis-Flex、Agents-Flex、Sa-Token、MySQL 8、Redis、SSE、Maven。</li>
+  <li><strong>后端</strong>：Java 17、Spring Boot 3.5、Agents-Flex、TinyFlow、MyBatis-Flex、MySQL、Redis、SSE。</li>
+  <li><strong>评测</strong>：Python、RAG Gold Dataset、Recall / MRR / nDCG、Faithfulness、Citation、Bad Case Analysis。</li>
   <li><strong>前端</strong>：Vue 3、TypeScript、Vite、Pinia、Element Plus、pnpm、Turbo。</li>
-  <li><strong>Agent 与模型</strong>：Qwen、知识库 RAG、Workflow、Plugin、MCP、动态 Planning、Direct / Agentic Routing。</li>
-  <li><strong>部署</strong>：Docker、Docker Compose、Nginx、企业内网私有化部署。</li>
+  <li><strong>Agent 与模型</strong>：Qwen、知识库 RAG、Workflow、Plugin、MCP、Plan-Execute。</li>
 </ul>
 
 <h2>贡献边界</h2>
-<p>该项目是在 AIFlowy 现有平台基础上进行的企业级二次开发。个人贡献集中在 <strong>Agent 路由、动态规划、QA 数据闭环、售后工单和部署链路</strong>；AIFlowy 原有的知识库、工作流、插件与平台基础能力不在个人贡献范围内。</p>
+<p>该项目是在 AIFlowy 现有平台基础上的企业级二次开发。个人角色为 <strong>Agent / RAG 核心开发（RAG 评测与 QA 闭环负责人）</strong>；AIFlowy 平台基础能力及 Plan-Execute 核心架构不归为个人独立成果。</p>
 """).strip()
 
 
@@ -239,17 +234,17 @@ MOOD_TRACKER_HTML = dedent("""
 PROJECTS = [
     {
         "slug": "agentproject",
-        "title": "面向智能硬件客服场景的可治理 Agent 平台",
-        "one_liner": "面向智能硬件售后咨询、故障排查与维护场景的 RAG + 多工具 Agent + Harness 控制层平台，重点解决 Agent 可控性问题。",
-        "project_type": "个人主导项目",
-        "role_summary": "AI 应用开发 / Agent 开发，负责需求拆解、总体架构、RAG 混合检索、Agent Harness、工具权限、HITL、答案验证、Trace、Artifact、评测脚本、测试和 CI。",
-        "tech_stack": ["Python", "FastAPI", "LangChain", "ReAct Agent", "Chroma", "BM25", "RRF", "Cross-Encoder Reranker", "MCP", "SSE", "pytest", "SQLite"],
+        "title": "智能硬件客服可治理 Agent 平台",
+        "one_liner": "以 ReactAgent 为执行面、AgentRunner Harness 为控制面，统一路由、预算、审批、证据验证、Trace 与评测门禁。",
+        "project_type": "个人开源项目",
+        "role_summary": "个人开源项目作者 / 维护者，负责总体架构、RAG 混合检索、Agent Harness、工具权限、HITL、答案验证、Trace、Artifact、服务化和 CI。",
+        "tech_stack": ["Python", "FastAPI", "LangChain/LangGraph", "Chroma", "BM25", "RRF", "PostgreSQL", "Redis", "MCP", "SSE", "OpenTelemetry", "Pytest"],
         "status": "运行中",
         "visibility": "public",
-        "start_date": date(2025, 10, 1),
+        "start_date": date(2025, 12, 1),
         "end_date": None,
         "sort_order": 1,
-        "duration": "2025.10 — 至今",
+        "duration": "2025.12 — 至今",
         "is_featured": True,
         "cover_image": "/static/images/projects/agentproject.svg",
         "content_html": AGENTPROJECT_HTML,
@@ -260,16 +255,16 @@ PROJECTS = [
     {
         "slug": "farino",
         "title": "法奥机器人智能客服平台",
-        "one_liner": "基于 AIFlowy 的企业级二次开发，构建机器人技术咨询 Agent 客服工作台，覆盖 Agent 路由、动态规划、QA 数据沉淀和售后工单。",
+        "one_liner": "基于 AIFlowy 的企业级二次开发，负责 168 条 / 26 类 Gold Dataset、7 层 RAG 评测、QA 闭环与中日双语链路。",
         "project_type": "南昌大学 × 法奥机器人校企合作",
-        "role_summary": "Agent 后端开发 / AI 应用开发，负责 Direct / Agentic 两级路由、Agent 动态规划模块、QA 数据闭环模块、售后工单流程和私有化部署。",
-        "tech_stack": ["Java 17", "Spring Boot 3", "Vue 3", "TypeScript", "MySQL 8", "Redis", "AIFlowy", "MCP", "SSE", "Docker Compose", "Nginx", "Qwen"],
+        "role_summary": "Agent / RAG 核心开发（RAG 评测与 QA 闭环负责人），并扩展既有 Plan-Execute 中日双语链路。",
+        "tech_stack": ["Java 17", "Spring Boot 3.5", "Agents-Flex", "TinyFlow", "MyBatis-Flex", "Python", "Vue 3", "MySQL", "Redis", "SSE", "Docker", "Qwen"],
         "status": "已完成",
         "visibility": "public",
         "start_date": date(2026, 1, 1),
-        "end_date": date(2026, 6, 30),
+        "end_date": date(2026, 8, 4),
         "sort_order": 2,
-        "duration": "2026.01 — 2026.06",
+        "duration": "2026.01 — 2026.08",
         "is_featured": True,
         "cover_image": "/static/images/projects/farino.svg",
         "content_html": FARINO_HTML,
