@@ -59,13 +59,23 @@ docker compose exec web python scripts/ingest_knowledge.py
 
 ## RAG 检索评测
 
-冻结题集位于 `tests/rag_golden_set.json`。服务和数据库启动后运行：
+`tests/rag_golden_set.json` 是 180 题的冻结来源标注集，覆盖事实查询、口语改写、复杂多证据问题、跨项目比较、无答案识别、危险输入和受限来源隔离。题目依据当前真实知识库构造，并经过结构校验与逐项一致性审计，但不冒充生产用户日志或人工复核数据；每题按类别、题型和难度分层，并使用稳定的知识库 `source_id` 标注分级相关性与证据组。
+
+服务、数据库和知识库准备完成后运行：
 
 ```bash
 docker compose exec web python scripts/evaluate_rag.py
 ```
 
-结果会写入 `static/evaluation/latest.json`，并展示在 `/evaluation` 页面。Hit Rate@5 的口径是每个问题的 Top 5 结果至少命中一个预先标注的可接受来源；它不等同于生成答案准确率。
+需要在自动化流程中启用质量门禁时运行：
+
+```bash
+docker compose exec web python scripts/evaluate_rag.py --enforce-gates
+```
+
+结果会写入 `static/evaluation/latest.json`，并展示在 `/evaluation` 页面。报告包含 Hit@1/3/5、MRR@5、Judged nDCG@5、Evidence Coverage@5、查询规划准确率、证据充分性 F1、证据门禁误放行率、知识边界准确率、正常问题放行率、危险输入拦截率、受限来源泄漏率、来源重复度以及 P50/P95 延迟；同时记录题集哈希、语料指纹、代码版本、Embedding 模型和检索参数。证据门禁误放行率衡量的是证据不足时仍被判为可回答的比例，不等同于最终生成答案的幻觉率。
+
+同一来源的重复 Chunk 只在首次出现时获得相关性收益。安全指标覆盖聊天入口规则，并用离线强制检索探针检查索引隔离；该评测不包含最终模型生成内容红队，也不等同于生成答案事实准确率、线上 SLA 或真实用户效果。
 
 ## 健康检查
 
