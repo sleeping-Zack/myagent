@@ -81,7 +81,7 @@ class ChunkRepository:
         stmt = stmt.order_by(lexical_score.desc()).limit(top_k)
 
         result = await session.execute(stmt)
-        max_score = max(1.0, len(terms) * 4.5)
+        max_score = max(1.0, len(terms))
         return [
             (chunk, min(1.0, float(raw_score) / max_score))
             for chunk, raw_score in result.all()

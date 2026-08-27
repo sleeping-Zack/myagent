@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 import re
 from typing import Any
@@ -36,12 +37,21 @@ _LEXICAL_STOP_TERMS = {
     "怎么", "如何", "一下", "介绍", "分别", "以及", "还有", "他的", "你的",
 }
 
+_SECTION_FOCUS_BOOST = 0.15
+
 
 def _lexical_terms(text: str) -> list[str]:
-    terms = set(re.findall(r"[a-z][a-z0-9_-]{1,}", text.lower()))
-    terms.update(_cjk_bigrams(text))
-    terms.difference_update(_LEXICAL_STOP_TERMS)
-    return sorted(terms, key=lambda value: (-len(value), value))[:12]
+    chinese = "".join(re.findall(r"[\u4e00-\u9fff]", text))
+    terms = re.findall(
+        r"[a-z][a-z0-9_-]{1,}|\d{4}(?:[./-]\d{1,2})?|\d+",
+        text.lower(),
+    )
+    terms.extend(chinese[index:index + 2] for index in range(max(0, len(chinese) - 1)))
+    counts = Counter(term for term in terms if term not in _LEXICAL_STOP_TERMS)
+    return sorted(
+        counts,
+        key=lambda value: (-counts[value], -len(value), value),
+    )[:32]
 
 
 @dataclass
@@ -109,23 +119,38 @@ class RetrievalService:
             return RetrievalOutcome([chunk], plan, [], answer)
 
         project_by_slug = {project.slug: project for project in projects}
-        quota = 1 if plan.requires_complete_coverage else top_k
+        quota = (
+            min(2, max(1, plan.context_limit // max(1, len(plan.targets))))
+            if plan.requires_complete_coverage
+            else top_k
+        )
         merged: dict[str, dict] = {}
+        selected_documents: set[str] = set()
+        target_queries = [
+            target.query
+            if target.query == question
+            else (
+                f"{target.query}\n{question}"
+                if plan.intent in {"multi_part", "general"}
+                else f"{question}\n{target.query}"
+            )
+            for target in plan.targets
+        ]
 
         if len(plan.targets) > 1:
             embeddings = await self._embedding_svc.async_embed_documents(
-                [target.query for target in plan.targets]
+                target_queries
             )
         else:
             embeddings = [
-                await self._embedding_svc.async_embed_query(plan.targets[0].query)
+                await self._embedding_svc.async_embed_query(target_queries[0])
             ]
 
-        for target, embedding in zip(plan.targets, embeddings):
+        for target, target_query, embedding in zip(plan.targets, target_queries, embeddings):
             project = project_by_slug.get(target.project_slug) if target.project_slug else None
             project_ids = [project.id] if project else None
             target_results = await self._retrieve_target(
-                question=target.query,
+                question=target_query,
                 session=session,
                 top_k=max(4, min(top_k, quota * 2)),
                 min_score=min_score,
@@ -134,10 +159,23 @@ class RetrievalService:
                 section_terms=list(target.section_terms),
                 embedding=embedding,
             )
+            focused_results: list[dict] = []
 
-            if not target_results and target.section_terms:
-                target_results = await self._retrieve_target(
-                    question=target.query,
+            if target.section_terms:
+                if plan.intent == "general" and target.query != question:
+                    target_results = [
+                        {
+                            **result,
+                            "score": round(
+                                min(1.0, result["score"] + _SECTION_FOCUS_BOOST),
+                                4,
+                            ),
+                        }
+                        for result in target_results
+                    ]
+                focused_results = target_results
+                broad_results = await self._retrieve_target(
+                    question=target_query,
                     session=session,
                     top_k=max(4, min(top_k, quota * 2)),
                     min_score=min_score,
@@ -146,11 +184,23 @@ class RetrievalService:
                     section_terms=None,
                     embedding=embedding,
                 )
+                combined_results = {
+                    result["chunk_id"]: result for result in target_results
+                }
+                for result in broad_results:
+                    current = combined_results.get(result["chunk_id"])
+                    if current is None or result["score"] > current["score"]:
+                        combined_results[result["chunk_id"]] = result
+                target_results = sorted(
+                    combined_results.values(),
+                    key=lambda item: item["score"],
+                    reverse=True,
+                )
 
             # 存量数据尚未回填 project_id 时仍可按项目标题检索，避免部署窗口内完全无结果。
             if not target_results and project_ids:
                 target_results = await self._retrieve_target(
-                    question=target.query,
+                    question=target_query,
                     session=session,
                     top_k=max(4, min(top_k, quota * 2)),
                     min_score=min_score,
@@ -159,19 +209,152 @@ class RetrievalService:
                     section_terms=list(target.section_terms),
                     embedding=embedding,
                 )
+                focused_results = target_results
 
-            for result in target_results[:quota]:
+            selected_results = target_results[:quota]
+            if plan.requires_complete_coverage:
+                candidate_results = [
+                    result
+                    for result in target_results
+                    if not result.get("document_id")
+                    or result["document_id"] not in selected_documents
+                ]
+                if not candidate_results:
+                    candidate_results = target_results
+                selected_results = candidate_results[:quota]
+                if focused_results:
+                    focused_candidates = [
+                        result
+                        for result in focused_results
+                        if not result.get("document_id")
+                        or result["document_id"] not in selected_documents
+                    ] or focused_results
+                    selected_results = focused_candidates[:quota]
+                    selected_ids = {
+                        result["chunk_id"] for result in selected_results
+                    }
+                    selected_results.extend(
+                        result
+                        for result in candidate_results
+                        if result["chunk_id"] not in selected_ids
+                    )
+                    selected_results = selected_results[:quota]
+
+            for result in selected_results:
+                if result.get("document_id"):
+                    selected_documents.add(result["document_id"])
                 chunk_id = result["chunk_id"]
                 if chunk_id in merged:
                     merged[chunk_id]["coverage_keys"] = sorted(set(
                         merged[chunk_id]["coverage_keys"] + [target.coverage_key]
                     ))
                     merged[chunk_id]["score"] = max(merged[chunk_id]["score"], result["score"])
+                    if any(
+                        focused["chunk_id"] == chunk_id
+                        for focused in focused_results
+                    ):
+                        merged[chunk_id]["_focused_coverage_keys"] = sorted(set(
+                            merged[chunk_id].get("_focused_coverage_keys", [])
+                            + [target.coverage_key]
+                        ))
                     continue
                 result["coverage_keys"] = [target.coverage_key]
+                result["_focused_coverage_keys"] = (
+                    [target.coverage_key]
+                    if any(
+                        focused["chunk_id"] == chunk_id
+                        for focused in focused_results
+                    )
+                    else []
+                )
                 merged[chunk_id] = result
 
-        chunks = sorted(merged.values(), key=lambda item: item["score"], reverse=True)
+        if plan.requires_complete_coverage:
+            synthesis_results = await self._retrieve_target(
+                question=question,
+                session=session,
+                top_k=2,
+                min_score=min_score,
+                project_ids=None,
+                project_slugs={value.id: value.slug for value in projects},
+                section_terms=None,
+                embedding=embeddings[0],
+            )
+            for result in synthesis_results:
+                chunk_id = result["chunk_id"]
+                if chunk_id in merged:
+                    merged[chunk_id]["score"] = max(
+                        merged[chunk_id]["score"], result["score"]
+                    )
+                    continue
+                result["coverage_keys"] = []
+                result["_focused_coverage_keys"] = []
+                merged[chunk_id] = result
+
+        ranked_chunks = sorted(merged.values(), key=lambda item: item["score"], reverse=True)
+        unique_documents: list[dict] = []
+        repeated_documents: list[dict] = []
+        document_counts: dict[str, int] = {}
+        for chunk in ranked_chunks:
+            document_id = chunk.get("document_id")
+            if not document_id:
+                unique_documents.append(chunk)
+                continue
+            count = document_counts.get(document_id, 0)
+            if count >= 2:
+                continue
+            document_counts[document_id] = count + 1
+            if count == 0:
+                unique_documents.append(chunk)
+            else:
+                repeated_documents.append(chunk)
+
+        chunks = unique_documents + repeated_documents
+
+        if plan.requires_complete_coverage:
+            coverage_ordered: list[dict] = []
+            remaining = list(chunks)
+            while True:
+                added = False
+                for coverage_key in plan.expected_coverage:
+                    candidate = next(
+                        (
+                            chunk
+                            for chunk in remaining
+                            if coverage_key
+                            in chunk.get("_focused_coverage_keys", [])
+                        ),
+                        None,
+                    ) or next(
+                        (
+                            chunk
+                            for chunk in remaining
+                            if coverage_key in chunk.get("coverage_keys", [])
+                        ),
+                        None,
+                    )
+                    if candidate is None:
+                        continue
+                    coverage_ordered.append(candidate)
+                    remaining.remove(candidate)
+                    added = True
+                if not added:
+                    break
+            chunks = coverage_ordered + remaining
+
+        if plan.intent == "multi_project":
+            first_per_project: list[dict] = []
+            repeated_projects: list[dict] = []
+            seen_projects: set[str] = set()
+            for chunk in chunks:
+                project_slug = chunk.get("project_slug")
+                if project_slug and project_slug not in seen_projects:
+                    seen_projects.add(project_slug)
+                    first_per_project.append(chunk)
+                else:
+                    repeated_projects.append(chunk)
+            chunks = first_per_project + repeated_projects
+
         result_limit = plan.context_limit if plan.requires_complete_coverage else min(top_k, plan.context_limit)
         chunks = chunks[:result_limit]
         covered = {
@@ -180,6 +363,9 @@ class RetrievalService:
             for key in chunk.get("coverage_keys", [])
         }
         missing = [key for key in plan.expected_coverage if key not in covered]
+        for chunk in chunks:
+            chunk.pop("document_id", None)
+            chunk.pop("_focused_coverage_keys", None)
         return RetrievalOutcome(chunks, plan, missing)
 
     async def _retrieve_target(
@@ -258,17 +444,21 @@ class RetrievalService:
                 })
 
         results.sort(key=lambda x: x["score"], reverse=True)
-        deduplicated: list[dict] = []
+        unique_documents: list[dict] = []
+        repeated_documents: list[dict] = []
         document_counts: dict[str, int] = {}
         for result in results:
-            document_id = result.pop("document_id")
+            document_id = result.get("document_id")
             if document_id:
                 count = document_counts.get(document_id, 0)
                 if count >= 2:
                     continue
                 document_counts[document_id] = count + 1
-            deduplicated.append(result)
-        return deduplicated[:top_k]
+                if count == 1:
+                    repeated_documents.append(result)
+                    continue
+            unique_documents.append(result)
+        return (unique_documents + repeated_documents)[:top_k]
 
     def _score(self, vector_score: float, chunk: Any, question: str) -> float:
         q_lower = question.lower()
