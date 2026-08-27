@@ -107,7 +107,7 @@ class RagService:
 
         # 3. 证据充分性判断
         if not self._citation.has_sufficient_evidence(
-            chunks, question, min_score=settings.min_relevance_score
+            retrieval, question, min_score=settings.min_relevance_score
         ):
             insufficient_tmpl = _load_prompt("insufficient_evidence.txt")
             # 整理现有最高分 chunk 摘要作为 available_info
