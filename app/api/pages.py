@@ -63,11 +63,16 @@ async def privacy_page(request: Request):
 @router.get("/evaluation", response_class=HTMLResponse)
 async def evaluation_page(request: Request):
     result = None
+    stale_result = False
     if EVALUATION_RESULT.exists():
-        result = json.loads(EVALUATION_RESULT.read_text(encoding="utf-8"))
+        candidate = json.loads(EVALUATION_RESULT.read_text(encoding="utf-8"))
+        if candidate.get("schema_version") == 3:
+            result = candidate
+        else:
+            stale_result = True
     return templates.TemplateResponse(
         "evaluation.html",
-        {"request": request, "result": result},
+        {"request": request, "result": result, "stale_result": stale_result},
     )
 
 
