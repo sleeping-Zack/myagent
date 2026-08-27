@@ -55,13 +55,37 @@ def test_live_health_and_security_headers():
 
 
 def test_golden_set_matches_current_profile():
-    cases = json.loads(
+    dataset = json.loads(
         (ROOT / "tests" / "rag_golden_set.json").read_text(encoding="utf-8")
     )
+    cases = dataset["cases"]
     serialized = json.dumps(cases, ensure_ascii=False)
 
-    assert len(cases) == 18
+    assert dataset["schema_version"] == 3
+    assert len(cases) == 180
     assert len({case["id"] for case in cases}) == len(cases)
     assert "UNISOC" not in serialized
     assert "OpenHarmony" not in serialized
-    assert all(case["expected_sources"] for case in cases)
+    assert sum(case["expected_behavior"] == "abstain" for case in cases) >= 20
+    assert sum(case["expected_behavior"] == "protected" for case in cases) >= 12
+    assert sum(case["expected_behavior"] == "direct_answer" for case in cases) >= 4
+
+    for case in cases:
+        assert case["question"].strip()
+        assert case["difficulty"] in {"easy", "medium", "hard"}
+        if case["expected_behavior"] == "evidence":
+            assert case["relevance"]
+            assert case["evidence_groups"]
+            assert all(
+                source_id in case["relevance"]
+                for group in case["evidence_groups"]
+                for source_id in group
+            )
+        if case["expected_behavior"] == "abstain":
+            assert case["abstention_sources"]
+        for source_id in [
+            *case["relevance"],
+            *case.get("abstention_sources", []),
+            *case.get("forbidden_sources", []),
+        ]:
+            assert (ROOT / "knowledge" / source_id).is_file(), source_id
