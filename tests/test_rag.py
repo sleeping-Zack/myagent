@@ -220,6 +220,102 @@ def test_rag_service_refuses_when_retrieval_coverage_is_incomplete():
     assert events[-1]["data"]["citations"] == []
 
 
+def test_rag_service_reports_retrieval_and_stream_timings(monkeypatch):
+    class Clock:
+        now = 100.0
+
+        def perf_counter(self):
+            return self.now
+
+        def advance(self, seconds):
+            self.now += seconds
+
+    clock = Clock()
+    monkeypatch.setattr("app.services.rag_service.time.perf_counter", clock.perf_counter)
+
+    class RetrievalStub:
+        async def retrieve_with_plan(self, *args, **kwargs):
+            clock.advance(0.2)
+            return RetrievalOutcome(
+                chunks=[_chunk(score=0.9, content="核心优势是工程闭环能力。")],
+                plan=QueryPlan(intent="general", context_limit=5),
+                missing_coverage=[],
+            )
+
+    class DeepSeekStub:
+        async def stream_chat(self, messages):
+            clock.advance(0.3)
+            yield "工程闭环"
+            clock.advance(0.7)
+            yield "能力。"
+
+        @staticmethod
+        def estimate_tokens(text):
+            return len(text)
+
+    service = RagService(RetrievalStub(), DeepSeekStub(), CitationService())
+
+    async def collect_events():
+        return [event async for event in service.answer(
+            "朱旭的核心优势是什么？",
+            conversation_id="conversation-1",
+            session=None,
+        )]
+
+    events = asyncio.run(collect_events())
+
+    assert events[-1]["data"]["timings"] == {
+        "retrieval_ms": 200,
+        "llm_ttft_ms": 300,
+        "llm_stream_ms": 700,
+    }
+
+
+def test_rag_service_marks_llm_timings_as_not_applicable_for_direct_answers(
+    monkeypatch,
+):
+    class Clock:
+        now = 100.0
+
+        def perf_counter(self):
+            return self.now
+
+    clock = Clock()
+    monkeypatch.setattr("app.services.rag_service.time.perf_counter", clock.perf_counter)
+
+    class RetrievalStub:
+        async def retrieve_with_plan(self, *args, **kwargs):
+            clock.now += 0.125
+            return RetrievalOutcome(
+                chunks=[_chunk(score=1.0, content="Agentproject、Myagent")],
+                plan=QueryPlan(intent="project_list", context_limit=5),
+                missing_coverage=[],
+                direct_answer="目前公开展示 Agentproject 和 Myagent。",
+            )
+
+    class DeepSeekStub:
+        @staticmethod
+        def estimate_tokens(text):
+            return len(text)
+
+    service = RagService(RetrievalStub(), DeepSeekStub(), CitationService())
+
+    async def collect_events():
+        return [event async for event in service.answer(
+            "请列出公开项目名称。",
+            conversation_id="conversation-1",
+            session=None,
+        )]
+
+    events = asyncio.run(collect_events())
+
+    assert events[-1]["data"]["timings"] == {
+        "retrieval_ms": 125,
+        "llm_ttft_ms": None,
+        "llm_stream_ms": None,
+    }
+
+
 def test_single_chunk_above_calibrated_threshold_is_sufficient(svc):
     chunks = [_chunk(score=0.43, content="候选人的核心优势是工程落地能力")]
 

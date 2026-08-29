@@ -100,12 +100,22 @@ class RagService:
         start_ms = int(time.time() * 1000)
 
         # 2. 检索
+        retrieval_started_at = time.perf_counter()
         retrieval = await self._retrieval.retrieve_with_plan(
             question,
             session=session,
             top_k=settings.retrieval_top_k,
             min_score=settings.min_relevance_score,
         )
+        retrieval_ms = max(
+            0,
+            round((time.perf_counter() - retrieval_started_at) * 1000),
+        )
+        retrieval_only_timings = {
+            "retrieval_ms": retrieval_ms,
+            "llm_ttft_ms": None,
+            "llm_stream_ms": None,
+        }
         chunks = retrieval.chunks
 
         # 3. 证据充分性判断
@@ -124,6 +134,7 @@ class RagService:
                 "estimated_input_tokens": self._deepseek.estimate_tokens(question),
                 "estimated_output_tokens": self._deepseek.estimate_tokens(fallback_text),
                 "latency_ms": int(time.time() * 1000) - start_ms,
+                "timings": retrieval_only_timings,
                 "suggestions": follow_up_suggestions(question),
             }}
             return
@@ -152,6 +163,7 @@ class RagService:
                 "estimated_input_tokens": self._deepseek.estimate_tokens(question),
                 "estimated_output_tokens": self._deepseek.estimate_tokens(retrieval.direct_answer),
                 "latency_ms": int(time.time() * 1000) - start_ms,
+                "timings": retrieval_only_timings,
                 "suggestions": follow_up_suggestions(question),
             }}
             return
@@ -202,10 +214,15 @@ class RagService:
 
         # 7. 流式输出
         answer_parts: list[str] = []
+        llm_started_at = time.perf_counter()
+        first_token_at: float | None = None
         async for token in self._deepseek.stream_chat(messages):
+            if first_token_at is None:
+                first_token_at = time.perf_counter()
             answer_parts.append(token)
             yield {"event": "token", "data": {"content": token}}
 
+        llm_finished_at = time.perf_counter()
         full_answer = "".join(answer_parts)
         latency_ms = int(time.time() * 1000) - start_ms
 
@@ -221,5 +238,16 @@ class RagService:
             "estimated_input_tokens": estimated_input_tokens,
             "estimated_output_tokens": estimated_output_tokens,
             "latency_ms": latency_ms,
+            "timings": {
+                "retrieval_ms": retrieval_ms,
+                "llm_ttft_ms": (
+                    max(0, round((first_token_at - llm_started_at) * 1000))
+                    if first_token_at is not None else None
+                ),
+                "llm_stream_ms": (
+                    max(0, round((llm_finished_at - first_token_at) * 1000))
+                    if first_token_at is not None else None
+                ),
+            },
             "suggestions": follow_up_suggestions(question),
         }}
