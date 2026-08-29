@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import json
+import time
 import uuid
 
 from fastapi import APIRouter, Depends, Request
@@ -41,6 +42,7 @@ async def chat(
     embedding_svc: EmbeddingService = Depends(get_embedding_service),
     deepseek_svc: DeepSeekService = Depends(get_deepseek_service),
 ):
+    request_started_at = time.perf_counter()
     settings = get_settings()
     question = body.question.strip()
 
@@ -234,10 +236,28 @@ async def chat(
                 estimated_output_tokens=metadata.get("estimated_output_tokens"),
                 latency_ms=metadata.get("latency_ms"),
             )
+            phase_timings = metadata.get("timings") or {}
+            timings = {
+                "retrieval_ms": phase_timings.get("retrieval_ms"),
+                "llm_ttft_ms": phase_timings.get("llm_ttft_ms"),
+                "llm_stream_ms": phase_timings.get("llm_stream_ms"),
+                "total_ms": max(
+                    0,
+                    round((time.perf_counter() - request_started_at) * 1000),
+                ),
+            }
+            logger.info(
+                "chat_generation_completed",
+                conversation_id=str(conversation.id),
+                generation_id=str(generation_id),
+                model_name=metadata.get("model_name"),
+                **timings,
+            )
             completed = True
             yield _sse("done", {
                 "message_id": str(assistant_message.id),
                 "suggestions": metadata.get("suggestions", []),
+                "timings": timings,
             })
         except asyncio.CancelledError:
             await repository.complete_assistant_message(
