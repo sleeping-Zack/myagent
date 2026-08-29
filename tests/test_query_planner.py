@@ -26,6 +26,22 @@ def _projects():
 @pytest.mark.parametrize(
     "question",
     [
+        "讲一下优缺点",
+        "介绍一下优劣势",
+        "说说长处和短板",
+        "分别说说优势和劣势",
+    ],
+)
+def test_combined_strengths_and_weaknesses_require_both_evidence_areas(question):
+    plan = plan_question(question, _projects())
+
+    assert plan.intent == "multi_part"
+    assert plan.expected_coverage == ["优势", "不足"]
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
         "请列出所有可用项目名称",
         "你做过哪些项目？",
         "目前公开的项目清单是什么？",

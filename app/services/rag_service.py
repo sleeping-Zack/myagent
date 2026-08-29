@@ -46,11 +46,14 @@ def follow_up_suggestions(question: str) -> list[str]:
 
 def answer_scope_instruction(question: str) -> str:
     q = question.lower()
+    combined_strengths_and_weaknesses = bool(re.search(r"优缺点|优劣势", q))
     strength_only = bool(re.search(
         r"优势|优点|强项|长处|竞争力|为什么.{0,12}适合|为何.{0,12}适合",
         q,
-    ))
-    weakness_only = bool(re.search(r"不足|缺点|短板|弱项|局限|风险", q))
+    )) or combined_strengths_and_weaknesses
+    weakness_only = bool(
+        re.search(r"不足|缺点|短板|弱项|劣势|局限|风险", q)
+    ) or combined_strengths_and_weaknesses
     overall_fit = bool(re.search(
         r"整体.{0,6}匹配|岗位匹配度|匹配情况|是否.{0,6}匹配|胜任度",
         q,
