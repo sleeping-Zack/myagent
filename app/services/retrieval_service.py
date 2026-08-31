@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 import re
-from typing import Any
+from typing import Any, Optional, cast
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.chunk_repository import ChunkRepository
 from app.repositories.project_repository import ProjectRepository
@@ -296,7 +296,7 @@ class RetrievalService:
         repeated_documents: list[dict] = []
         document_counts: dict[str, int] = {}
         for chunk in ranked_chunks:
-            document_id = chunk.get("document_id")
+            document_id = cast(Optional[str], chunk.get("document_id"))
             if not document_id:
                 unique_documents.append(chunk)
                 continue
