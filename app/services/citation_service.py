@@ -274,7 +274,7 @@ class CitationService:
         min_score: float = 0.40,
     ) -> bool:
         outcome = None if isinstance(evidence, list) else evidence
-        chunks = evidence if outcome is None else outcome.chunks
+        chunks = evidence if isinstance(evidence, list) else evidence.chunks
         if outcome and outcome.plan.intent == "project_list":
             return bool(outcome.direct_answer)
         if not chunks:
